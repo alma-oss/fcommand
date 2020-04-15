@@ -1,2 +1,4 @@
 FSharp.Core
+FSharp.Data
 Lmc.ErrorHandling
+Lmc.ServiceIdentification
