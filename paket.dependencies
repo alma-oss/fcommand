@@ -1,0 +1,19 @@
+framework: netcoreapp3.1
+
+source https://api.nuget.org/v3/index.json
+nuget FSharp.Core
+
+git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nuget/
+# LMC Nuget dependencies:
+nuget Lmc.ErrorHandling ~> 1.6
+
+// [ FAKE GROUP ]
+group Build
+    storage none
+    source https://api.nuget.org/v3/index.json
+    nuget Fake.DotNet.Cli
+    nuget Fake.IO.FileSystem
+    nuget Fake.Core.Target
+    nuget Fake.DotNet.AssemblyInfoFile
+    nuget Fake.Core.ReleaseNotes
+    nuget Fake.Tools.Git
