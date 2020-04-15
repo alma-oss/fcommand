@@ -2,7 +2,7 @@ namespace Lmc.Command
 
 type RawData = RawData of FSharp.Data.JsonValue
 
-module internal CommonSerializer =
+module CommonSerializer =
     open System
 
     let formatDateTime (dateTime: DateTime) =
@@ -11,8 +11,8 @@ module internal CommonSerializer =
     let formatDateTimeOffset (dateTime: DateTimeOffset) =
         dateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'")
 
-    type StringOrNull = string option -> string
+    type internal StringOrNull = string option -> string
 
-    let stringOrNull: StringOrNull = function
+    let internal stringOrNull: StringOrNull = function
         | Some string -> string
         | _ -> null
