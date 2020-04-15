@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <OutputType>Library</OutputType>
+    <PackageId>Lmc.Command</PackageId>
+    <Version>0.1.0</Version>
+    <RepositoryUrl>https://bitbucket.lmc.cz/projects/ARCHI/repos/fcommand/browse</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="src/Command.fs" />
+  </ItemGroup>
+
+  <Import Project=".paket\Paket.Restore.targets" />
+</Project>
