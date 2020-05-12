@@ -308,6 +308,8 @@ module DataItemDto =
             Type = item.Type
         }
 
+    let internal serializeScalar item = item |> serialize (fun a -> a :> obj)
+
 // Generic Command DTO
 
 type SynchronousCommandDto<'MetaDataDto, 'DataDto> = {

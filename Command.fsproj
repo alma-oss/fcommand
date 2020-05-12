@@ -17,6 +17,7 @@
     <Compile Include="src/Types.fs" />
     <Compile Include="src/MetaData.fs" />
     <Compile Include="src/Command.fs" />
+    <Compile Include="src/StartProcessCommand.fs" />
   </ItemGroup>
 
   <Import Project=".paket\Paket.Restore.targets" />

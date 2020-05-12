@@ -11,6 +11,9 @@ COPY ./paket.lock /library/
 COPY ./Command.fsproj /library/
 COPY ./src /library/src
 
+# copy tests
+COPY ./tests /library/tests
+
 # others
 COPY ./.git /library/.git
 COPY ./CHANGELOG.md /library/

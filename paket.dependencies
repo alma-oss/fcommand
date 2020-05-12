@@ -9,6 +9,16 @@ git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nug
 nuget Lmc.ErrorHandling ~> 1.6
 nuget Lmc.ServiceIdentification ~> 3.4
 
+group Tests
+    storage: none
+    source https://api.nuget.org/v3/index.json
+    nuget Expecto
+    nuget YoloDev.Expecto.TestSdk
+
+    git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nuget/
+    # LMC Nuget dependencies:
+    nuget Lmc.Serializer ~> 1.0
+
 // [ FAKE GROUP ]
 group Build
     storage none
