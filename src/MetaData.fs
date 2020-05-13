@@ -51,12 +51,12 @@ module MetaData =
         open CommonSerializer
 
         type OnlyCreatedAt = {
-            created_at: string
+            CreatedAt: string
         }
 
         let fromCreatedAt (CreatedAt createdAt) =
             {
-                created_at = createdAt |> formatDateTime
+                CreatedAt = createdAt |> formatDateTime
             }
 
         let serialize = function

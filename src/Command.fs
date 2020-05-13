@@ -271,80 +271,82 @@ module CommandResponse =
 //
 
 type ReactorDto = {
-    domain: string
-    context: string
-    purpose: string
-    version: string
-    zone: string
-    bucket: string
+    Domain: string
+    Context: string
+    Purpose: string
+    Version: string
+    Zone: string
+    Bucket: string
 }
 
 type RequestorDto = {
-    domain: string
-    context: string
-    purpose: string
-    version: string
-    zone: string
-    bucket: string
+    Domain: string
+    Context: string
+    Purpose: string
+    Version: string
+    Zone: string
+    Bucket: string
 }
 
 type ReplyToDto = {
-    ``type``: string
-    identification: string
+    Type: string
+    Identification: string
 }
 
 // Generic command data DTO
 
 type DataItemDto<'Value> = {
-    value: 'Value
-    ``type``: string
+    Value: 'Value
+    Type: string
 }
 
 [<RequireQualifiedAccess>]
 module DataItemDto =
-    let serialize serialize (item: DataItem<_>) =
+    let serialize serialize (item: DataItem<_>): DataItemDto<_> =
         {
-            value = item.Value |> serialize
-            ``type`` = item.Type
+            Value = item.Value |> serialize
+            Type = item.Type
         }
+
+    let internal serializeScalar item = item |> serialize (fun a -> a :> obj)
 
 // Generic Command DTO
 
 type SynchronousCommandDto<'MetaDataDto, 'DataDto> = {
-    schema: int
-    id: Guid
-    correlation_id: Guid
-    causation_id: Guid
-    timestamp: string
+    Schema: int
+    Id: Guid
+    CorrelationId: Guid
+    CausationId: Guid
+    Timestamp: string
 
-    ttl: int
-    authentication_bearer: string
-    request: string
+    Ttl: int
+    AuthenticationBearer: string
+    Request: string
 
-    reactor: ReactorDto
-    requestor: RequestorDto
+    Reactor: ReactorDto
+    Requestor: RequestorDto
 
-    meta_data: 'MetaDataDto
-    data: 'DataDto
+    MetaData: 'MetaDataDto
+    Data: 'DataDto
 }
 
 type AsynchronousCommandDto<'MetaDataDto, 'DataDto> = {
-    schema: int
-    id: Guid
-    correlation_id: Guid
-    causation_id: Guid
-    timestamp: string
+    Schema: int
+    Id: Guid
+    CorrelationId: Guid
+    CausationId: Guid
+    Timestamp: string
 
-    ttl: int
-    authentication_bearer: string
-    request: string
+    Ttl: int
+    AuthenticationBearer: string
+    Request: string
 
-    reactor: ReactorDto
-    requestor: RequestorDto
-    reply_to: ReplyToDto
+    Reactor: ReactorDto
+    Requestor: RequestorDto
+    ReplyTo: ReplyToDto
 
-    meta_data: 'MetaDataDto
-    data: 'DataDto
+    MetaData: 'MetaDataDto
+    Data: 'DataDto
 }
 
 type CommandDto<'MetaDataDto, 'DataDto> =
@@ -359,32 +361,32 @@ type CommandDto<'MetaDataDto, 'DataDto> =
 module Reactor =
     let internal serialize (Reactor boxPattern): ReactorDto =
         {
-            domain = boxPattern.Domain |> Domain.value
-            context = boxPattern.Context |> Context.value
-            purpose = boxPattern.Purpose |> PurposePattern.value
-            version = boxPattern.Version |> VersionPattern.value
-            zone = boxPattern.Zone |> ZonePattern.value
-            bucket = boxPattern.Bucket |> BucketPattern.value
+            Domain = boxPattern.Domain |> Domain.value
+            Context = boxPattern.Context |> Context.value
+            Purpose = boxPattern.Purpose |> PurposePattern.value
+            Version = boxPattern.Version |> VersionPattern.value
+            Zone = boxPattern.Zone |> ZonePattern.value
+            Bucket = boxPattern.Bucket |> BucketPattern.value
         }
 
 [<RequireQualifiedAccess>]
 module Requestor =
     let internal serialize (Requestor box): RequestorDto =
         {
-            domain = box.Domain |> Domain.value
-            context = box.Context |> Context.value
-            purpose = box.Purpose |> Purpose.value
-            version = box.Version |> Version.value
-            zone = box.Zone |> Zone.value
-            bucket = box.Bucket |> Bucket.value
+            Domain = box.Domain |> Domain.value
+            Context = box.Context |> Context.value
+            Purpose = box.Purpose |> Purpose.value
+            Version = box.Version |> Version.value
+            Zone = box.Zone |> Zone.value
+            Bucket = box.Bucket |> Bucket.value
         }
 
 [<RequireQualifiedAccess>]
 module ReplyTo =
-    let internal serialize (replyTo: ReplyTo) =
+    let internal serialize (replyTo: ReplyTo): ReplyToDto =
         {
-            ``type`` = replyTo.Type
-            identification = replyTo.Identification
+            Type = replyTo.Type
+            Identification = replyTo.Identification
         }
 
 [<RequireQualifiedAccess>]
@@ -410,21 +412,21 @@ module Command =
                 let! data = command.Data |> Data.data |> serializeData
 
                 return Synchronous {
-                    schema = command.Schema
-                    id = command.Id |> CommandId.value
-                    correlation_id = command.CorrelationId |> CorrelationId.value
-                    causation_id = command.CausationId |> CausationId.value
-                    timestamp = command.Timestamp
+                    Schema = command.Schema
+                    Id = command.Id |> CommandId.value
+                    CorrelationId = command.CorrelationId |> CorrelationId.value
+                    CausationId = command.CausationId |> CausationId.value
+                    Timestamp = command.Timestamp
 
-                    ttl = command.TimeToLive |> TimeToLive.value
-                    authentication_bearer = command.AuthenticationBearer |> AuthenticationBearer.value
-                    request = command.Request |> Request.value
+                    Ttl = command.TimeToLive |> TimeToLive.value
+                    AuthenticationBearer = command.AuthenticationBearer |> AuthenticationBearer.value
+                    Request = command.Request |> Request.value
 
-                    reactor = command.Reactor |> Reactor.serialize
-                    requestor = command.Requestor |> Requestor.serialize
+                    Reactor = command.Reactor |> Reactor.serialize
+                    Requestor = command.Requestor |> Requestor.serialize
 
-                    meta_data = metaData
-                    data = data
+                    MetaData = metaData
+                    Data = data
                 }
             }
         | Command.Asynchronous command ->
@@ -433,22 +435,22 @@ module Command =
                 let! data = command.Data |> Data.data |> serializeData
 
                 return Asynchronous {
-                    schema = command.Schema
-                    id = command.Id |> CommandId.value
-                    correlation_id = command.CorrelationId |> CorrelationId.value
-                    causation_id = command.CausationId |> CausationId.value
-                    timestamp = command.Timestamp
+                    Schema = command.Schema
+                    Id = command.Id |> CommandId.value
+                    CorrelationId = command.CorrelationId |> CorrelationId.value
+                    CausationId = command.CausationId |> CausationId.value
+                    Timestamp = command.Timestamp
 
-                    ttl = command.TimeToLive |> TimeToLive.value
-                    authentication_bearer = command.AuthenticationBearer |> AuthenticationBearer.value
-                    request = command.Request |> Request.value
+                    Ttl = command.TimeToLive |> TimeToLive.value
+                    AuthenticationBearer = command.AuthenticationBearer |> AuthenticationBearer.value
+                    Request = command.Request |> Request.value
 
-                    reactor = command.Reactor |> Reactor.serialize
-                    requestor = command.Requestor |> Requestor.serialize
-                    reply_to = command.ReplyTo |> ReplyTo.serialize
+                    Reactor = command.Reactor |> Reactor.serialize
+                    Requestor = command.Requestor |> Requestor.serialize
+                    ReplyTo = command.ReplyTo |> ReplyTo.serialize
 
-                    meta_data = metaData
-                    data = data
+                    MetaData = metaData
+                    Data = data
                 }
             }
 
