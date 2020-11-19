@@ -83,7 +83,7 @@ module TestLogic =
                 "ttl": 100,
                 "authentication_bearer": "",
                 "request": "start_process",
-                    "reactor": {
+                "reactor": {
                     "domain": "test",
                     "context": "reactor",
                     "purpose": "common",
