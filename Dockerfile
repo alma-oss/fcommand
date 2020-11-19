@@ -1,7 +1,7 @@
 FROM dcreg.service.consul/dev/development-dotnet-core-sdk-common:3.1
 
 # build scripts
-COPY ./fake.sh /library/
+COPY ./build.sh /library/
 COPY ./build.fsx /library/
 COPY ./paket.dependencies /library/
 COPY ./paket.references /library/
@@ -15,12 +15,13 @@ COPY ./src /library/src
 COPY ./tests /library/tests
 
 # others
+COPY ./.config /library/.config
 COPY ./.git /library/.git
 COPY ./CHANGELOG.md /library/
 
 WORKDIR /library
 
 RUN \
-    ./fake.sh build target Build no-clean
+    ./build.sh -t Build no-clean
 
-CMD ["./fake.sh", "build", "target", "Tests", "no-clean"]
+CMD ["./build.sh", "-t", "Tests", "no-clean"]
