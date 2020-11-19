@@ -6,7 +6,7 @@ nuget FSharp.Data ~> 3.0
 
 git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nuget/
 # LMC Nuget dependencies:
-nuget Lmc.ErrorHandling ~> 1.6
+nuget Lmc.ErrorHandling ~> 2.2
 nuget Lmc.ServiceIdentification ~> 3.4
 
 group Tests

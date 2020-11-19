@@ -1,17 +1,17 @@
 RESTRICTION: == netcoreapp3.1
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    FSharp.Core (4.7.1)
+    FSharp.Core (5.0)
     FSharp.Data (3.3.3)
       FSharp.Core (>= 4.3.4)
   remote: paket-files/git_bitbucket.lmc.cz7999/archi/nuget-server/nuget
-    Lmc.ErrorHandling (1.6.0)
-      FSharp.Core (>= 4.6.2)
+    Lmc.ErrorHandling (2.2.0)
+      FSharp.Core (>= 4.7.1)
     Lmc.ServiceIdentification (3.4.0)
       FSharp.Core (>= 4.7)
 GIT
   remote: ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git
-     (89f6044f1accacd9cf0e35a020331e637d04dfd8)
+     (0265b79c863cf9dcda40da2876ef8b28b290fc5b)
       path: /nuget/
 GROUP Build
 STORAGE: NONE
