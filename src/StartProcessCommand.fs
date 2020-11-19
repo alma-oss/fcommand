@@ -5,7 +5,7 @@ module StartProcess =
     open System
     open Lmc.Command
     open Lmc.Command.CommonSerializer
-    open ServiceIdentification
+    open Lmc.ServiceIdentification
 
     let private request = Request "start_process"
 

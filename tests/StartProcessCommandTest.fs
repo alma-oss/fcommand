@@ -9,11 +9,11 @@ let orFail = function
 
 [<AutoOpen>]
 module ApplicationLogic =
-    open ServiceIdentification
+    open Lmc.ServiceIdentification
 
     type ActionRequestToken = ActionRequestToken of string
 
-    let createProcessToGenerateTGT currentApplication reactor authentication ttl (service: ServiceIdentification.Service, actionRequestToken: ActionRequestToken) =
+    let createProcessToGenerateTGT currentApplication reactor authentication ttl (service: Service, actionRequestToken: ActionRequestToken) =
         [
             StartProcess.ProcessVariable.String ("service", (service |> Service.concat "-", "string") |> DataItem.createWithType)
             StartProcess.ProcessVariable.Object ("action_request_token", (actionRequestToken :> obj, "string") |> DataItem.createWithType)
@@ -33,11 +33,14 @@ module ApplicationLogic =
 
 [<AutoOpen>]
 module TestLogic =
-    open ServiceIdentification
+    open Lmc.ServiceIdentification
 
-    let currentApplication = Box.createFromStrings "test" "command" "common" "test" "all" "common"
+    let private box context =
+        (Box.createFromStrings("test", context, "common", "test", "all", "common")).Value
+
+    let currentApplication = box "command"
     let reactor =
-        Box.createFromStrings "test" "reactor" "common" "test" "all" "common"
+        box "reactor"
         |> BoxPattern.ofBox
         |> Reactor
 
@@ -131,10 +134,87 @@ module TestLogic =
             (service, actionRequestToken) |> createProcessToGenerateTGT, serializeObj, Ok expectedSerializedCommand, "StartProcess Command serialized."
         ]
 
+open FSharp.Data
 open Lmc.Serializer
+
+let private (|JsonValueItem|_|) (index, key) value =
+    try
+        match value with
+        | JsonValue.Record (values) ->
+            match values.[index] with
+            | k, v when k = key -> Some (JsonValueItem v)
+            | _ -> None
+        | _ -> None
+
+    with e -> failtestf "Invalid json value %s at [%d] - %A" key index e
+
+let private (|JsonValueDataItem|_|) value: DataItem<_> option = maybe {
+    let! v =
+        match value with
+        | JsonValueItem (0, "value") v -> Some v
+        | _ -> None
+
+    let! t =
+        match value with
+        | JsonValueItem (1, "type") t -> Some t
+        | _ -> None
+
+    return {
+        Value = v.AsString()
+        Type = t.AsString()
+    }
+}
 
 [<Tests>]
 let createAndSerializeCommand =
+    let parseMetadata (data: JsonValue): Result<MetaData, _> =
+        match data with
+        | JsonValueItem (0, "created_at") createdAt -> createdAt.AsDateTimeOffset().DateTime |> CreatedAt |> OnlyCreatedAt |> Ok
+        | _ -> failtestf "Invalid metadata %A" data
+
+    let parseData data: Result<Data<StartProcess.CommandData>, _> =
+        let processItem =
+            match data with
+            | JsonValueItem (0, "process") (JsonValueDataItem p) -> p |> DataItem.map StartProcess.ProcessName
+            | _ -> failtestf "Invalid data.process %A" data
+
+        let processVariables: DataItem<_> =
+            match data with
+            | JsonValueItem (1, "process_variables") processVariables ->
+                let value =
+                    match processVariables with
+                    | (JsonValueItem (0, "value") v) -> v
+                    | _ -> failtestf "Invalid data.process_variables.value %A" processVariables
+                let t =
+                    match processVariables with
+                    | (JsonValueItem (1, "type") t) -> t
+                    | _ -> failtestf "Invalid data.process_variables.type %A" processVariables
+
+                let art =
+                    match value with
+                    | JsonValueItem (0, "action_request_token") (JsonValueDataItem art) ->
+                        let art = art |> DataItem.map (ActionRequestToken >> (fun art -> art :> obj))
+
+                        StartProcess.ProcessVariable.Object ("action_request_token", art)
+                    | _ -> failtestf "Invalid data.process_variables.action_request_token %A" value
+
+                let service =
+                    match value with
+                    | JsonValueItem (1, "service") (JsonValueDataItem service) -> StartProcess.ProcessVariable.String ("service", service)
+                    | _ -> failtestf "Invalid data.process_variables.service %A" value
+
+                {
+                    Value = [ service; art ]
+                    Type = t.AsString()
+                }
+
+            | _ -> failtestf "Invalid data.process_variables %A" data
+
+        Ok (Data {
+            Process = processItem
+            ProcessVariables = processVariables
+        })
+
     testList "Command - Start Process" [
         testCase "create and serialize" <| fun _ ->
             provideCommand
@@ -143,13 +223,28 @@ let createAndSerializeCommand =
 
                 match serializedCommand, expected with
                 | Ok dto, Ok expected ->
-                    let actualLines = dto |> CommandDto.serialize Serialize.toJsonPretty |> normalize
+                    let serializedCommand = dto |> CommandDto.serialize Serialize.toJsonPretty
+
+                    let actualLines = serializedCommand |> normalize
                     let expectedLines = expected |> normalize
 
                     expectedLines
                     |> List.iteri (fun i expected ->
                         Expect.equal actualLines.[i] expected description
                     )
+
+                    let parsedCommand =
+                        match serializedCommand |> Command.parse parseMetadata parseData with
+                        | Ok parsed -> parsed
+                        | Error error -> failtestf "Serialzed Command cannot be parsed again. %A" error
+
+                    let startProcessCommand = startProcessCommand |> StartProcess.Command.command |> Command.Asynchronous
+
+                    // those objects are equal, but for some reason, they are not equal, so they are serialized to string and compared
+                    Expect.equal
+                        (parsedCommand |> sprintf "%A")
+                        (startProcessCommand |> sprintf "%A")
+                        "Serialized result parsed again"
 
                 | Error error, Error expectedError ->
                     Expect.equal error expectedError description

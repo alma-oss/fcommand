@@ -2,7 +2,7 @@ namespace Lmc.Command
 
 open System
 open System.Net
-open ServiceIdentification
+open Lmc.ServiceIdentification
 
 //
 // Common types
@@ -57,6 +57,8 @@ type CommandResponse<'MetaData, 'ResponseData> = {
 
 type CommandResponseError<'MetaData, 'ResponseData> =
     | ParseError of string * exn
+    | InvalidReactor
+    | InvalidRequestor
     | ErrorResponse of CommandResponse<'MetaData, 'ResponseData>
 
 [<RequireQualifiedAccess>]
@@ -66,9 +68,6 @@ module CommandResponse =
     type NotParsed = NotParsed
 
     type private CommandResponseSchema = JsonProvider<"src/schema/response.json", SampleIsList = true>
-
-    let private formatDateTime (dateTimeOffset: DateTimeOffset) =
-        dateTimeOffset.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'")
 
     let parseHttpStatusCode (code: int): HttpStatusCode = enum code
 
@@ -80,34 +79,40 @@ module CommandResponse =
 
             let data = rawResponse.Data.Attributes
 
+            let! reactor =
+                Box.createFromStrings(
+                    data.Reactor.Domain,
+                    data.Reactor.Context,
+                    data.Reactor.Purpose,
+                    data.Reactor.Version,
+                    data.Reactor.Zone,
+                    data.Reactor.Bucket
+                )
+                |> Result.ofOption InvalidReactor
+                |> Result.map ReactorResponse
+
+            let! requestor =
+                Box.createFromStrings (
+                    data.Requestor.Domain,
+                    data.Requestor.Context,
+                    data.Requestor.Purpose,
+                    data.Requestor.Version,
+                    data.Requestor.Zone,
+                    data.Requestor.Bucket
+                )
+                |> Result.ofOption InvalidRequestor
+                |> Result.map Requestor
+
             let response: CommandResponse<NotParsed, NotParsed> =
                 {
                     Schema = data.Schema
                     Id = ResponseId data.Id
                     CorrelationId = CorrelationId data.CorrelationId
                     CausationId = CausationId data.CausationId
-                    Timestamp = data.Timestamp |> formatDateTime
+                    Timestamp = data.Timestamp |> CommonSerializer.formatDateTimeOffset
 
-                    Reactor =
-                        ReactorResponse (
-                            Box.createFromStrings
-                                data.Reactor.Domain
-                                data.Reactor.Context
-                                data.Reactor.Purpose
-                                data.Reactor.Version
-                                data.Reactor.Zone
-                                data.Reactor.Bucket
-                        )
-                    Requestor =
-                        Requestor (
-                            Box.createFromStrings
-                                data.Requestor.Domain
-                                data.Requestor.Context
-                                data.Requestor.Purpose
-                                data.Requestor.Version
-                                data.Requestor.Zone
-                                data.Requestor.Bucket
-                        )
+                    Reactor = reactor
+                    Requestor = requestor
 
                     MetaData = NotParsed
                     Data = None

@@ -7,11 +7,10 @@ NUGET
   remote: paket-files/git_bitbucket.lmc.cz7999/archi/nuget-server/nuget
     Lmc.ErrorHandling (2.2.0)
       FSharp.Core (>= 4.7.1)
-    Lmc.ServiceIdentification (3.4.0)
-      FSharp.Core (>= 4.7)
+    Lmc.ServiceIdentification (4.0.0)
 GIT
   remote: ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git
-     (0265b79c863cf9dcda40da2876ef8b28b290fc5b)
+     (693eee51e4c99add8e7640d792c96be220c11319)
       path: /nuget/
 GROUP Build
 STORAGE: NONE
