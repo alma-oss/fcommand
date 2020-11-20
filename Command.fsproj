@@ -14,10 +14,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="src/Utils.fs" />
     <Compile Include="src/Types.fs" />
     <Compile Include="src/MetaData.fs" />
     <Compile Include="src/Command.fs" />
     <Compile Include="src/Response.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Prepared commands -->
     <Compile Include="src/StartProcessCommand.fs" />
   </ItemGroup>
 
