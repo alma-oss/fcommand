@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <!-- Prepared commands -->
-    <Compile Include="src/StartProcessCommand.fs" />
+    <Compile Include="src/Command/StartProcessCommand.fs" />
   </ItemGroup>
 
   <Import Project=".paket\Paket.Restore.targets" />
