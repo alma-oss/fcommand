@@ -137,62 +137,34 @@ module TestLogic =
 open FSharp.Data
 open Lmc.Serializer
 
-let private (|JsonValueItem|_|) (index, key) value =
-    try
-        match value with
-        | JsonValue.Record (values) ->
-            match values.[index] with
-            | k, v when k = key -> Some (JsonValueItem v)
-            | _ -> None
-        | _ -> None
-
-    with e -> failtestf "Invalid json value %s at [%d] - %A" key index e
-
-let private (|JsonValueDataItem|_|) value: DataItem<_> option = maybe {
-    let! v =
-        match value with
-        | JsonValueItem (0, "value") v -> Some v
-        | _ -> None
-
-    let! t =
-        match value with
-        | JsonValueItem (1, "type") t -> Some t
-        | _ -> None
-
-    return {
-        Value = v.AsString()
-        Type = t.AsString()
-    }
-}
-
 [<Tests>]
 let createAndSerializeCommand =
-    let parseMetadata (data: JsonValue): Result<MetaData, _> =
+    let parseMetadata data: Result<MetaData, _> =
         match data with
-        | JsonValueItem (0, "created_at") createdAt -> createdAt.AsDateTimeOffset().DateTime |> CreatedAt |> OnlyCreatedAt |> Ok
+        | RawData.Item "created_at" (RawData createdAt) -> createdAt.AsDateTimeOffset().DateTime |> CreatedAt |> OnlyCreatedAt |> Ok
         | _ -> failtestf "Invalid metadata %A" data
 
     let parseData data: Result<Data<StartProcess.CommandData>, _> =
         let processItem =
             match data with
-            | JsonValueItem (0, "process") (JsonValueDataItem p) -> p |> DataItem.map StartProcess.ProcessName
+            | RawData.Item "process" (RawData.DataItem p) -> p |> DataItem.map StartProcess.ProcessName
             | _ -> failtestf "Invalid data.process %A" data
 
         let processVariables: DataItem<_> =
             match data with
-            | JsonValueItem (1, "process_variables") processVariables ->
+            | RawData.Item "process_variables" processVariables ->
                 let value =
                     match processVariables with
-                    | (JsonValueItem (0, "value") v) -> v
+                    | RawData.Item "value" v -> v
                     | _ -> failtestf "Invalid data.process_variables.value %A" processVariables
-                let t =
+                let valueType =
                     match processVariables with
-                    | (JsonValueItem (1, "type") t) -> t
+                    | RawData.Item "type" (RawData t) -> t
                     | _ -> failtestf "Invalid data.process_variables.type %A" processVariables
 
                 let art =
                     match value with
-                    | JsonValueItem (0, "action_request_token") (JsonValueDataItem art) ->
+                    | RawData.Item "action_request_token" (RawData.DataItem art) ->
                         let art = art |> DataItem.map (ActionRequestToken >> (fun art -> art :> obj))
 
                         StartProcess.ProcessVariable.Object ("action_request_token", art)
@@ -200,12 +172,12 @@ let createAndSerializeCommand =
 
                 let service =
                     match value with
-                    | JsonValueItem (1, "service") (JsonValueDataItem service) -> StartProcess.ProcessVariable.String ("service", service)
+                    | RawData.Item "service" (RawData.DataItem service) -> StartProcess.ProcessVariable.String ("service", service)
                     | _ -> failtestf "Invalid data.process_variables.service %A" value
 
                 {
                     Value = [ service; art ]
-                    Type = t.AsString()
+                    Type = valueType.AsString()
                 }
 
             | _ -> failtestf "Invalid data.process_variables %A" data

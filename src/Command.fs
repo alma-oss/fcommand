@@ -48,50 +48,6 @@ type Command<'MetaData, 'CommandData> =
     | Synchronous of SynchronousCommand<'MetaData, 'CommandData>
     | Asynchronous of AsynchronousCommand<'MetaData, 'CommandData>
 
-//
-// Command DTO
-//
-
-type ReactorDto = {
-    Domain: string
-    Context: string
-    Purpose: string
-    Version: string
-    Zone: string
-    Bucket: string
-}
-
-type RequestorDto = {
-    Domain: string
-    Context: string
-    Purpose: string
-    Version: string
-    Zone: string
-    Bucket: string
-}
-
-type ReplyToDto = {
-    Type: string
-    Identification: string
-}
-
-// Generic command data DTO
-
-type DataItemDto<'Value> = {
-    Value: 'Value
-    Type: string
-}
-
-[<RequireQualifiedAccess>]
-module DataItemDto =
-    let serialize serialize (item: DataItem<_>): DataItemDto<_> =
-        {
-            Value = item.Value |> serialize
-            Type = item.Type
-        }
-
-    let internal serializeScalar item = item |> serialize (fun a -> a :> obj)
-
 // Generic Command DTO
 
 type SynchronousCommandDto<'MetaDataDto, 'DataDto> = {
@@ -134,46 +90,6 @@ type AsynchronousCommandDto<'MetaDataDto, 'DataDto> = {
 type CommandDto<'MetaDataDto, 'DataDto> =
     | Synchronous of SynchronousCommandDto<'MetaDataDto, 'DataDto>
     | Asynchronous of AsynchronousCommandDto<'MetaDataDto, 'DataDto>
-
-//
-// Modules
-//
-
-[<RequireQualifiedAccess>]
-module Reactor =
-    let internal serialize (Reactor boxPattern): ReactorDto =
-        {
-            Domain = boxPattern.Domain |> Domain.value
-            Context = boxPattern.Context |> Context.value
-            Purpose = boxPattern.Purpose |> PurposePattern.value
-            Version = boxPattern.Version |> VersionPattern.value
-            Zone = boxPattern.Zone |> ZonePattern.value
-            Bucket = boxPattern.Bucket |> BucketPattern.value
-        }
-
-[<RequireQualifiedAccess>]
-module Requestor =
-    let internal serialize (Requestor box): RequestorDto =
-        {
-            Domain = box.Domain |> Domain.value
-            Context = box.Context |> Context.value
-            Purpose = box.Purpose |> Purpose.value
-            Version = box.Version |> Version.value
-            Zone = box.Zone |> Zone.value
-            Bucket = box.Bucket |> Bucket.value
-        }
-
-[<RequireQualifiedAccess>]
-module ReplyTo =
-    let internal serialize (replyTo: ReplyTo): ReplyToDto =
-        {
-            Type = replyTo.Type
-            Identification = replyTo.Identification
-        }
-
-[<RequireQualifiedAccess>]
-module Data =
-    let data (Data data) = data
 
 //
 // Serialize Command
@@ -284,11 +200,11 @@ module Command =
                 |> Result.ofOption InvalidRequestor
                 |> Result.map Requestor
 
-            let! metaData = rawCommand.MetaData.JsonValue |> parseMetaData
+            let! metaData = rawCommand.MetaData.JsonValue |> RawData |> parseMetaData
             let! data =
                 rawCommand.Data
                 |> Result.ofOption MissingData
-                |> Result.bind (fun data -> data.JsonValue |> parseData)
+                |> Result.bind (fun data -> data.JsonValue |> RawData |> parseData)
 
             let id = CommandId rawCommand.Id
             let correlationId = CorrelationId rawCommand.CorrelationId
