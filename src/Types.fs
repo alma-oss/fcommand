@@ -2,6 +2,7 @@ namespace Lmc.Command
 
 open System
 open Lmc.ServiceIdentification
+open Lmc.ErrorHandling
 
 // Simple types
 

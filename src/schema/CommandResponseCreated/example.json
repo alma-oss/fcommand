@@ -1,0 +1,66 @@
+{
+    "schema": 1,
+    "id": "a9bcbe1e-d231-40b8-93b8-aff63f2f086d",
+    "correlation_id": "86bddf2c-27d0-46eb-b6fa-782efad7b49d",
+    "causation_id": "c1ba763b-aefa-4100-939b-f38df8deeb59",
+    "timestamp": "2018-06-27T09:43:50.559+02:00",
+    "event": "command_response_created",
+    "domain": "consents",
+    "context": "consentor",
+    "purpose": "devel",
+    "version": "v1v0v0",
+    "zone": "all",
+    "bucket": "devel",
+    "meta_data": {
+        "created_at": "2019-06-27T09:43:50.575+02:00"
+    },
+    "key_data": {
+        "command_id": "087d0866-4089-4cfd-9b3a-99be84526937"
+    },
+    "domain_data": {
+        "response": {
+            "data": {
+                "type": "commands",
+                "attributes": {
+                    "schema": 1,
+                    "id": "087d0866-4089-4cfd-9b3a-99be84526937",
+                    "ttl": 2000,
+                    "causation_id": "f5502214-0769-4fbf-9c6a-bd3d48955b91",
+                    "correlation_id": "f5502214-0769-4fbf-9c6a-bd3d48955b91",
+                    "timestamp": "2020-03-04T11:50:33Z",
+                    "data": {},
+                    "meta_data": null,
+                    "reactor": {
+                        "domain": "domain",
+                        "context": "reactor",
+                        "purpose": "purpose",
+                        "version": "version",
+                        "bucket": "bucket",
+                        "zone": "zone"
+                    },
+                    "requestor": {
+                        "domain": "domain",
+                        "context": "requestor",
+                        "purpose": "purpose",
+                        "version": "version",
+                        "bucket": "bucket",
+                        "zone": "zone"
+                    },
+                    "response_to": "rest",
+                    "response": 400,
+                    "errors": [
+                        {
+                            "status": "400",
+                            "title": "Concrete error title",
+                            "detail": "Top level message"
+                        },
+                        {
+                            "status": "400",
+                            "detail": "Just top level message"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

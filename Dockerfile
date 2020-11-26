@@ -1,25 +1,22 @@
 FROM dcreg.service.consul/dev/development-dotnet-core-sdk-common:3.1
 
 # build scripts
-COPY ./build.sh /library/
-COPY ./build.fsx /library/
-COPY ./paket.dependencies /library/
-COPY ./paket.references /library/
-COPY ./paket.lock /library/
+COPY ./build.sh /lib/
+COPY ./build.fsx /lib/
+COPY ./paket.dependencies /lib/
+COPY ./paket.references /lib/
+COPY ./paket.lock /lib/
 
 # sources
-COPY ./Command.fsproj /library/
-COPY ./src /library/src
-
-# copy tests
-COPY ./tests /library/tests
+COPY ./Command.fsproj /lib/
+COPY ./src /lib/src
 
 # others
-COPY ./.config /library/.config
-COPY ./.git /library/.git
-COPY ./CHANGELOG.md /library/
+COPY ./.git /lib/.git
+COPY ./.config /lib/.config
+COPY ./CHANGELOG.md /lib/
 
-WORKDIR /library
+WORKDIR /lib
 
 RUN \
     ./build.sh -t Build no-clean

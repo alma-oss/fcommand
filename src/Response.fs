@@ -3,6 +3,8 @@ namespace Lmc.Command
 open System
 open System.Net
 open Lmc.ServiceIdentification
+open Lmc.Serializer
+open Lmc.ErrorHandling
 
 //
 // Common types
@@ -55,11 +57,13 @@ type CommandResponse<'MetaData, 'ResponseData> = {
     Errors: ResponseError list
 }
 
-type CommandResponseError<'MetaData, 'ResponseData> =
+type NoMetaData = NoMetaData
+
+type CommandResponseError<'ResponseData> =
     | ParseError of string * exn
     | InvalidReactor
     | InvalidRequestor
-    | ErrorResponse of CommandResponse<'MetaData, 'ResponseData>
+    | ErrorResponse of CommandResponse<NoMetaData, 'ResponseData>
 
 [<RequireQualifiedAccess>]
 module CommandResponse =
@@ -69,7 +73,26 @@ module CommandResponse =
 
     type private CommandResponseSchema = JsonProvider<"src/schema/response.json", SampleIsList = true>
 
-    let parseHttpStatusCode (code: int): HttpStatusCode = enum code
+    let private parseHttpStatusCode (code: int): HttpStatusCode = enum code
+
+    let ignoreMetadata response =
+        {
+            Schema = response.Schema
+            Id = response.Id
+            CorrelationId = response.CorrelationId
+            CausationId = response.CausationId
+            Timestamp = response.Timestamp
+
+            Reactor = response.Reactor
+            Requestor = response.Requestor
+
+            MetaData = NoMetaData
+            Data = response.Data
+
+            ResponseTo = response.ResponseTo
+            Response = response.Response
+            Errors = response.Errors
+        }
 
     let parse serializedResponse = result {
         try
@@ -109,7 +132,7 @@ module CommandResponse =
                     Id = ResponseId data.Id
                     CorrelationId = CorrelationId data.CorrelationId
                     CausationId = CausationId data.CausationId
-                    Timestamp = data.Timestamp |> CommonSerializer.formatDateTimeOffset
+                    Timestamp = data.Timestamp |> Serialize.dateTimeOffset
 
                     Reactor = reactor
                     Requestor = requestor
@@ -137,7 +160,7 @@ module CommandResponse =
             return!
                 match response.Response, response.Errors with
                 | (StatusCode code), [] when (int code) < 400 -> Ok response
-                | _ -> Error (ErrorResponse response)
+                | _ -> Error (ErrorResponse (response |> ignoreMetadata))
         with
         | e ->
             return! Error (ParseError (serializedResponse, e))

@@ -2,6 +2,7 @@ namespace Lmc.Command
 
 open System
 open Lmc.ServiceIdentification
+open Lmc.ErrorHandling
 
 //
 // Generic Command
@@ -161,7 +162,8 @@ module Command =
             }
 
     open FSharp.Data
-    open Result.Operators
+    open Lmc.Serializer
+    open Lmc.ErrorHandling.Result.Operators
 
     type private CommandSchema = JsonProvider<"src/schema/command.json", SampleIsList = true>
 
@@ -209,7 +211,7 @@ module Command =
             let id = CommandId rawCommand.Id
             let correlationId = CorrelationId rawCommand.CorrelationId
             let causationId = CausationId rawCommand.CausationId
-            let timestamp = rawCommand.Timestamp |> CommonSerializer.formatDateTimeOffset
+            let timestamp = rawCommand.Timestamp |> Serialize.dateTimeOffset
 
             let ttl = rawCommand.Ttl |> TimeToLive.ofMiliSeconds
 

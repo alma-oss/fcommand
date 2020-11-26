@@ -4,8 +4,9 @@ namespace Lmc.Command
 module StartProcess =
     open System
     open Lmc.Command
-    open Lmc.Command.CommonSerializer
     open Lmc.ServiceIdentification
+    open Lmc.Serializer
+    open Lmc.ErrorHandling
 
     let private request = Request "start_process"
 
@@ -43,7 +44,7 @@ module StartProcess =
                 Id = commandId
                 CorrelationId = CorrelationId.fromCommandId commandId
                 CausationId = CausationId.fromCommandId commandId
-                Timestamp = now |> formatDateTime
+                Timestamp = now |> Serialize.dateTime
 
                 TimeToLive = ttl
                 AuthenticationBearer = authentication
