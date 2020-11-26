@@ -94,7 +94,7 @@ module CommandResponse =
             Errors = response.Errors
         }
 
-    let parse serializedResponse = result {
+    let parse parseData serializedResponse = result {
         try
             let rawResponse =
                 serializedResponse
@@ -126,7 +126,7 @@ module CommandResponse =
                 |> Result.ofOption InvalidRequestor
                 |> Result.map Requestor
 
-            let response: CommandResponse<NotParsed, NotParsed> =
+            let response: CommandResponse<NotParsed, 'ResponseData> =
                 {
                     Schema = data.Schema
                     Id = ResponseId data.Id
@@ -138,7 +138,7 @@ module CommandResponse =
                     Requestor = requestor
 
                     MetaData = NotParsed
-                    Data = None
+                    Data = parseData (RawData data.Data.JsonValue)
 
                     ResponseTo = data.ResponseTo
                     Response = StatusCode (parseHttpStatusCode data.Response)

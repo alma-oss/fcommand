@@ -24,6 +24,9 @@
   <ItemGroup>
     <!-- Prepared commands -->
     <Compile Include="src/Command/StartProcessCommand.fs" />
+
+    <!-- Prepared events -->
+    <Compile Include="src/Event/CommandResponseCreated.fs" />
   </ItemGroup>
 
   <Import Project=".paket\Paket.Restore.targets" />
