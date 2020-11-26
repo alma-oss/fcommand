@@ -69,6 +69,25 @@ type CommandResponseError<'ResponseData> =
 module CommandResponse =
     open FSharp.Data
 
+    let create correlationId causationId timestamp reactor requestor responseTo response errors data  =
+        {
+            Schema = 1
+            Id = Guid.NewGuid() |> ResponseId
+            CorrelationId = correlationId
+            CausationId = causationId
+            Timestamp = timestamp |> Serialize.dateTime
+
+            Reactor = reactor
+            Requestor = requestor
+
+            MetaData = CreatedAt.now()
+            Data = data
+
+            ResponseTo = responseTo
+            Response = response
+            Errors = errors
+        }
+
     type NotParsed = NotParsed
 
     type private CommandResponseSchema = JsonProvider<"src/schema/response.json", SampleIsList = true>
