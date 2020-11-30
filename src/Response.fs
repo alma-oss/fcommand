@@ -12,7 +12,15 @@ open Lmc.ErrorHandling
 
 type ResponseId = ResponseId of Guid
 
+[<RequireQualifiedAccess>]
+module ResponseId =
+    let value (ResponseId id) = id
+
 type StatusCode = StatusCode of HttpStatusCode
+
+[<RequireQualifiedAccess>]
+module StatusCode =
+    let value (StatusCode status) = int status
 
 //
 // Errors
@@ -65,11 +73,43 @@ type CommandResponseError<'ResponseData> =
     | InvalidRequestor
     | ErrorResponse of CommandResponse<NoMetaData, 'ResponseData>
 
+//
+// Command Response DTO
+//
+
+type ResponseErrorDto = {
+    Status: int
+    Title: string
+    Detail: string
+}
+
+type CommandResponseDto<'MetaDataDto, 'ResponseDataDto> = {
+    Schema: int
+    Id: Guid
+    CorrelationId: Guid
+    CausationId: Guid
+    Timestamp: string
+
+    Reactor: ReactorDto
+    Requestor: RequestorDto
+
+    MetaData: 'MetaDataDto
+    Data: 'ResponseDataDto
+
+    ResponseTo: string
+    Response: int
+    Errors: ResponseErrorDto list
+}
+
+//
+// Command Response module
+//
+
 [<RequireQualifiedAccess>]
 module CommandResponse =
     open FSharp.Data
 
-    let create correlationId causationId timestamp reactor requestor responseTo response errors data  =
+    let create correlationId causationId timestamp reactor requestor responseTo response errors data: CommandResponse<_, _> =
         {
             Schema = 1
             Id = Guid.NewGuid() |> ResponseId
@@ -80,7 +120,9 @@ module CommandResponse =
             Reactor = reactor
             Requestor = requestor
 
-            MetaData = CreatedAt.now()
+            MetaData = GenericMetaData.ofList [
+                "created_at", (DateTime.Now |> Serialize.dateTime)
+            ]
             Data = data
 
             ResponseTo = responseTo
@@ -94,7 +136,7 @@ module CommandResponse =
 
     let private parseHttpStatusCode (code: int): HttpStatusCode = enum code
 
-    let ignoreMetadata response =
+    let ignoreMetadata (response: CommandResponse<_, _>): CommandResponse<_, _> =
         {
             Schema = response.Schema
             Id = response.Id
@@ -113,7 +155,7 @@ module CommandResponse =
             Errors = response.Errors
         }
 
-    let parse parseData serializedResponse = result {
+    let parse (parseResponseMetaData: RawData -> GenericMetaData) parseData serializedResponse = result {
         try
             let rawResponse =
                 serializedResponse
@@ -145,7 +187,7 @@ module CommandResponse =
                 |> Result.ofOption InvalidRequestor
                 |> Result.map Requestor
 
-            let response: CommandResponse<NotParsed, 'ResponseData> =
+            let response: CommandResponse<GenericMetaData, 'ResponseData> =
                 {
                     Schema = data.Schema
                     Id = ResponseId data.Id
@@ -156,15 +198,15 @@ module CommandResponse =
                     Reactor = reactor
                     Requestor = requestor
 
-                    MetaData = NotParsed
-                    Data = parseData (RawData data.Data.JsonValue)
+                    MetaData = RawData data.MetaData.JsonValue |> parseResponseMetaData
+                    Data = RawData data.Data.JsonValue |> parseData
 
                     ResponseTo = data.ResponseTo
                     Response = StatusCode (parseHttpStatusCode data.Response)
                     Errors =
                         data.Errors
                         |> Seq.map (fun e ->
-                            {
+                            let error: ResponseError = {
                                 Detail = e.Detail
                                 Status = StatusCode (parseHttpStatusCode e.Status)
                                 Title =
@@ -172,6 +214,7 @@ module CommandResponse =
                                     | Some title -> title
                                     | _ -> ""
                             }
+                            error
                         )
                         |> Seq.toList
                 }
@@ -184,3 +227,47 @@ module CommandResponse =
         | e ->
             return! Error (ParseError (serializedResponse, e))
     }
+
+    let toDto metaData data (response: CommandResponse<_, _>): CommandResponseDto<_, _> =
+        let (ReactorResponse reactor) = response.Reactor
+        let (Requestor requestor) = response.Requestor
+
+        {
+            Schema = response.Schema
+            Id = response.Id |> ResponseId.value
+            CorrelationId = response.CorrelationId |> CorrelationId.value
+            CausationId = response.CausationId |> CausationId.value
+            Timestamp = response.Timestamp
+
+            Reactor = {
+                Domain = reactor.Domain |> Domain.value
+                Context = reactor.Context |> Context.value
+                Purpose = reactor.Purpose |> Purpose.value
+                Version = reactor.Version |> Version.value
+                Zone = reactor.Zone |> Zone.value
+                Bucket = reactor.Bucket |> Bucket.value
+            }
+            Requestor = {
+                Domain = requestor.Domain |> Domain.value
+                Context = requestor.Context |> Context.value
+                Purpose = requestor.Purpose |> Purpose.value
+                Version = requestor.Version |> Version.value
+                Zone = requestor.Zone |> Zone.value
+                Bucket = requestor.Bucket |> Bucket.value
+            }
+
+            MetaData = response.MetaData |> metaData
+            Data = response.Data |> data
+
+            ResponseTo = response.ResponseTo
+            Response = response.Response |> StatusCode.value
+            Errors =
+                response.Errors
+                |> List.map (fun e ->
+                    {
+                        Status = e.Status |> StatusCode.value
+                        Title = e.Title
+                        Detail  = e.Detail
+                    }
+                )
+        }

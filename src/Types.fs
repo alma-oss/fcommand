@@ -235,3 +235,14 @@ module RawData =
             Type = t.AsString()
         }
     }
+
+
+//
+// Generic Meta Data
+//
+
+type GenericMetaData = GenericMetaData of Map<string, string>
+
+[<RequireQualifiedAccess>]
+module GenericMetaData =
+    let ofList = Map.ofList >> GenericMetaData

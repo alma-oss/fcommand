@@ -24,8 +24,11 @@
   <ItemGroup>
     <!-- Prepared commands -->
     <Compile Include="src/Command/StartProcessCommand.fs" />
+  </ItemGroup>
 
+  <ItemGroup>
     <!-- Prepared events -->
+    <Compile Include="src/Event/Event.fs" />
     <Compile Include="src/Event/CommandResponseCreated.fs" />
   </ItemGroup>
 

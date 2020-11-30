@@ -7,7 +7,6 @@
 - Update dependencies
 - Add `CommandResponseCreated` Event
 - [**BC**] Parse data in `CommandResponse.parse` function
-- Add `CommandResponse.create` function
 
 ## 2.0.0 - 2020-05-13
 - [**BC**] Change all DTO structures to PascalCase, and let the serialization dealt with a format

@@ -24,7 +24,7 @@ module CommandResponseCreated =
     }
 
     type DomainData<'ResponseData> = {
-        Response: CommandResponse<NoMetaData, 'ResponseData>
+        Response: CommandResponse<GenericMetaData, 'ResponseData>
     }
 
     type MetaData = {
@@ -68,22 +68,6 @@ module CommandResponseCreated =
         | Complete of InternalEvent<'Response>
         | WithoutMetaData of InternalEventWithtoutMetaData<'Response>
 
-    [<RequireQualifiedAccess>]
-    module Event =
-        let toCommon: Event<_> -> Lmc.Kafka.CommonEvent = function
-            | Complete (InternalEvent event) -> event |> KafkaEvent.toCommon
-            | WithoutMetaData (InternalEventWithtoutMetaData event) -> event |> KafkaEvent.toCommon
-
-        let box event = event |> toCommon |> Lmc.Kafka.CommonEvent.box
-
-        let keyData: Event<_> -> KeyData = function
-            | Complete (InternalEvent { KeyData = keyData }) -> keyData
-            | WithoutMetaData (InternalEventWithtoutMetaData { KeyData = keyData }) -> keyData
-
-        let domainData: Event<'Response> -> DomainData<'Response> = function    // todo - check types
-            | Complete (InternalEvent { DomainData = domainData }) -> domainData
-            | WithoutMetaData (InternalEventWithtoutMetaData { DomainData = domainData }) -> domainData
-
     //
     // Parse event
     //
@@ -103,7 +87,7 @@ module CommandResponseCreated =
             | Complete
             | WithoutMetaData
 
-        let parseEvent parseType (parseResponseData: _ -> Data<'ResponseData> option) (rawEvent: Lmc.Kafka.RawEvent) =
+        let parseEvent parseType parseResponseMetaData (parseResponseData: _ -> Data<'ResponseData> option) (rawEvent: Lmc.Kafka.RawEvent) =
             result {
                 do! EventType.assertSame (Name, rawEvent.Event) <@> (fun _ -> ParseError.InvalidEventType)
 
@@ -124,10 +108,9 @@ module CommandResponseCreated =
                     domainDataJsonValue.ToString()
                     |> DomainDataSchema.Parse
 
-                let! (response: CommandResponse<NoMetaData, 'ResponseData>) =
+                let! (response: CommandResponse<GenericMetaData, 'ResponseData>) =
                     parsedDomainData.Response.ToString()
-                    |> CommandResponse.parse parseResponseData
-                    <!> CommandResponse.ignoreMetadata
+                    |> CommandResponse.parse parseResponseMetaData parseResponseData
                     <@> ParseError.CommandResponseError
 
                 let domainData: DomainData<'ResponseData> =
@@ -184,7 +167,7 @@ module CommandResponseCreated =
         open Lmc.Kafka
         open Lmc.ServiceIdentification
 
-        let deriveFromCommandResponse (deriver: Box) commandId (response: CommandResponse<'MetaData, 'ResponseData>) =
+        let deriveFromCommandResponse (deriver: Box) commandId (response: CommandResponse<GenericMetaData, 'ResponseData>) =
             let correlationId (Lmc.Command.CorrelationId id) = Lmc.Kafka.CorrelationId id
             let causationId (Lmc.Command.CausationId id) = Lmc.Kafka.CausationId id
 
@@ -209,7 +192,7 @@ module CommandResponseCreated =
                     CommandId = commandId
                 }
                 DomainData = {
-                    Response = response |> CommandResponse.ignoreMetadata
+                    Response = response
                 }
             }
 
@@ -237,76 +220,76 @@ module CommandResponseCreated =
     // Serialize DTO
     //
 
-    (* type KeyDataDto = {
-        PersonId: string
-        Purpose: string
-        Scope: string
+    type KeyDataDto = {
+        CommandId: Guid
     }
 
-    type DomainDataDto = {
-        Purpose: string
-        Scope: string
-        Email: string
-        Phone: string
-    } *)
+    type DomainDataDto<'ResponseMetaDataDto, 'ResponseDataDto> = {
+        Response: CommandResponseDto<'ResponseMetaDataDto, 'ResponseDataDto>
+    }
 
-    (* type EventDto = Kafka.EventDto<ResourceDto, KeyDataDto, MetaDataDto.CreatedAtAndProcessedBy, DomainDataDto>
-
-    type PublicEventDto = Kafka.EventDto<ResourceDto, KeyDataDto, MetaDataDto.CreatedAtAndProcessedBy, NoData>
+    type EventDto<'ResponseMetaDataDto, 'ResponseDataDto> = Lmc.Kafka.EventDto<Lmc.Kafka.NoData, KeyDataDto, MetaDataDto.OnlyCreatedAt, DomainDataDto<'ResponseMetaDataDto, 'ResponseDataDto>>
 
     module private Dto =
         open Lmc.Serializer
 
+        let private serializeMetaData: MetaData -> Result<MetaDataDto.OnlyCreatedAt, _> = fun m ->
+            Ok {
+                CreatedAt = m.CreatedAt |> Serialize.dateTime
+            }
+
         let private serializeKeyData: KeyData -> KeyDataDto = fun keyData ->
             {
-                PersonId = keyData.PersonId |> PersonId.value
-                Purpose = keyData.Intent |> Intent.purpose
-                Scope = keyData.Intent |> Intent.scope
+                CommandId = keyData.CommandId |> CommandId.value
             }
 
-        let private serializeDomainData: DomainData -> DomainDataDto = fun domainData ->
-            let (email, phone) = domainData.Contact |> Contact.value
-
+        let private serializeDomainData serializeResponse: DomainData<_> -> DomainDataDto<_, _> = fun domainData ->
             {
-                Email = email |> Option.map Email.value |> Serialize.stringOrNull
-                Phone = phone |> Option.map Phone.value |> Serialize.stringOrNull
-                Purpose = domainData.Intent |> Intent.purpose
-                Scope = domainData.Intent |> Intent.scope
+                Response = domainData.Response |> serializeResponse
             }
 
-        let toInternalDto serialize (event: Event<KeyData, MetaData, DomainData>) =
+        let toInternalDto serialize serializeResponse (event: KafkaEvent<KeyData, MetaData, DomainData<'Response>>) =
             event
-            |> Event.toDto
+            |> KafkaEvent.toDto
                 (DtoError.assertEventType Name)
-                (Resource.toDto >> Ok)
-                (Serialize.processedMetaData event)
+                Ok
+                serializeMetaData
                 (serializeKeyData >> Ok)
-                (serializeDomainData >> Ok)
-            <!> EventDto.serialize serialize
+                (serializeDomainData serializeResponse >> Ok)
+            <!> Lmc.Kafka.EventDto.serialize serialize
 
-        let toPublicDto serialize (event: Event<KeyData, MetaData, PublicDomainData>) =
-            event
-            |> Event.toDto
-                (DtoError.assertEventType Name)
-                (Resource.toDto >> Ok)
-                (Serialize.processedMetaData event)
-                (serializeKeyData >> Ok)
-                (ignore >> Ok)
-            <!> EventDto.serialize serialize
- *)
     // Public Dto functions
 
-    (* let serializeInternal: Serialize<InternalEvent, KeyData, MetaData, DomainData> =
+    let serializeInternal serializeResponse: SerializeEvent<InternalEvent<'Response>, KeyData, MetaData, DomainData<'Response>> =
         fun serialize (InternalEvent event) ->
-            event |> Dto.toInternalDto serialize
+            event |> Dto.toInternalDto serialize serializeResponse
 
-    let serializeInternalOrFail: SerializeOrFail<InternalEvent> =
-        fun serialize -> serializeInternal serialize >> failOnErrorWith DtoError.format
+    let private failOnErrorWith (formatError: 'Error -> string) = function
+        | Ok success -> success
+        | Error error -> failwithf "%s" <| formatError error
 
-    let serializePublic: Serialize<PublicEvent, KeyData, MetaData, PublicDomainData> =
-        fun serialize (PublicEvent event) ->
-            event |> Dto.toPublicDto serialize
+    let serializeInternalOrFail serializeResponse: SerializeEventOrFail<InternalEvent<'Response>> =
+        fun serialize -> serializeInternal serializeResponse serialize >> failOnErrorWith Event.DtoError.format
 
-    let serializePublicOrFail: SerializeOrFail<PublicEvent> =
-        fun serialize -> serializePublic serialize >> failOnErrorWith DtoError.format
- *)
+    [<RequireQualifiedAccess>]
+    module Event =
+        let toCommon: Event<_> -> Lmc.Kafka.CommonEvent = function
+            | Complete (InternalEvent event) -> event |> KafkaEvent.toCommon
+            | WithoutMetaData (InternalEventWithtoutMetaData event) -> event |> KafkaEvent.toCommon
+
+        let box event = event |> toCommon |> Lmc.Kafka.CommonEvent.box
+
+        let keyData: Event<_> -> KeyData = function
+            | Complete (InternalEvent { KeyData = keyData }) -> keyData
+            | WithoutMetaData (InternalEventWithtoutMetaData { KeyData = keyData }) -> keyData
+
+        let domainData: Event<'Response> -> DomainData<'Response> = function    // todo - check types
+            | Complete (InternalEvent { DomainData = domainData }) -> domainData
+            | WithoutMetaData (InternalEventWithtoutMetaData { DomainData = domainData }) -> domainData
+
+        let private toInternal = function
+            | Complete (InternalEvent event) -> event |> Transform.toInternal event.MetaData |> InternalEvent
+            | WithoutMetaData (InternalEventWithtoutMetaData event) -> event |> Transform.toInternal { CreatedAt = DateTime.Now } |> InternalEvent
+
+        let serialize serialize serializeResponse event =
+            event |> toInternal |> serializeInternal serializeResponse serialize
