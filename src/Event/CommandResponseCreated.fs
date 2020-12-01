@@ -4,7 +4,6 @@ namespace Lmc.Command.Event
 module CommandResponseCreated =
     open System
     open FSharp.Data
-    // open Lmc.Kafka
     open Lmc.ErrorHandling
     open Lmc.ErrorHandling.Result.Operators
     open Lmc.Command
@@ -42,15 +41,22 @@ module CommandResponseCreated =
         let response: DomainData<'Response> -> _ = fun { Response = response } -> response
 
     type MetaDataParseError =
-        | Invalid
+        | Invalid of exn
 
     [<RequireQualifiedAccess>]
     module MetaData =
+        open Lmc.Kafka
+
+        type private MetaDataSchema = JsonProvider<"src/schema/CommandResponseCreated/metaData.json", SampleIsList = true>
+
         let parse metaData =
-            // todo - really parse metaData
-            Ok {
-                CreatedAt = DateTime.Now
-            }
+            try
+                let parsed = metaData |> RawData.toJson |> MetaDataSchema.Parse
+
+                Ok {
+                    CreatedAt = parsed.CreatedAt.DateTime
+                }
+            with e -> Error (Invalid e)
 
     type InternalEvent<'Response> = private InternalEvent of KafkaEvent<KeyData, MetaData, DomainData<'Response>>
 
@@ -283,7 +289,7 @@ module CommandResponseCreated =
             | Complete (InternalEvent { KeyData = keyData }) -> keyData
             | WithoutMetaData (InternalEventWithtoutMetaData { KeyData = keyData }) -> keyData
 
-        let domainData: Event<'Response> -> DomainData<'Response> = function    // todo - check types
+        let domainData: Event<'Response> -> DomainData<'Response> = function
             | Complete (InternalEvent { DomainData = domainData }) -> domainData
             | WithoutMetaData (InternalEventWithtoutMetaData { DomainData = domainData }) -> domainData
 
