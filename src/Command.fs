@@ -1,99 +1,8 @@
 namespace Lmc.Command
 
 open System
-open System.Net
-open ServiceIdentification
-
-// Simple types
-
-type CommandId = CommandId of Guid
-
-[<RequireQualifiedAccess>]
-module CommandId =
-    let value (CommandId id) = id
-
-type CorrelationId = CorrelationId of Guid
-
-[<RequireQualifiedAccess>]
-module CorrelationId =
-    let value (CorrelationId correlationId) = correlationId
-    let fromCommandId = CommandId.value >> CorrelationId
-
-type CausationId = CausationId of Guid
-
-[<RequireQualifiedAccess>]
-module CausationId =
-    let value (CausationId causationId) = causationId
-    let fromCommandId = CommandId.value >> CausationId
-
-type Reactor = Reactor of BoxPattern
-type ReactorResponse = ReactorResponse of Box
-
-type Requestor = Requestor of Box
-
-type ReplyTo = {
-    Type: string
-    Identification: string
-}
-
-type [<Measure>] MiliSecond
-type TimeToLive = TimeToLive of int<MiliSecond>
-
-[<RequireQualifiedAccess>]
-module TimeToLive =
-    let ofMiliSeconds value = TimeToLive (value * 1<MiliSecond>)
-    let ofSeconds value = TimeToLive (value * 1000<MiliSecond>)
-
-    let value (TimeToLive value) = int value
-
-type AuthenticationBearer = AuthenticationBearer of string
-
-[<RequireQualifiedAccess>]
-module AuthenticationBearer =
-    let empty = AuthenticationBearer ""
-
-    let value (AuthenticationBearer value) = value
-
-type Request = private Request of string
-
-type RequestError =
-    | EmptyRequest
-
-[<RequireQualifiedAccess>]
-module RequestError =
-    let format = function
-        | EmptyRequest -> "Request cannot be empty. It defines what you want command to do."
-
-[<RequireQualifiedAccess>]
-module Request =
-    let create = function
-        | null | "" -> Error EmptyRequest
-        | request -> Ok (Request request)
-
-    let value (Request value) = value
-
-// Generic Command Data
-
-type DataItem<'Value> = {
-    Value: 'Value
-    Type: string
-}
-
-[<RequireQualifiedAccess>]
-module DataItem =
-    let createWithType<'Value> (value: 'Value, valueType) =
-        {
-            Value = value
-            Type = valueType
-        }
-
-    let create: 'Value -> DataItem<'Value> =
-        fun value -> {
-            Value = value
-            Type = value.GetType().ToString()
-        }
-
-type Data<'CommandData> = Data of 'CommandData
+open Lmc.ServiceIdentification
+open Lmc.ErrorHandling
 
 //
 // Generic Command
@@ -140,176 +49,6 @@ type Command<'MetaData, 'CommandData> =
     | Synchronous of SynchronousCommand<'MetaData, 'CommandData>
     | Asynchronous of AsynchronousCommand<'MetaData, 'CommandData>
 
-//
-// Command Response
-//
-
-type ResponseId = ResponseId of Guid
-
-type StatusCode = StatusCode of HttpStatusCode
-
-type ResponseError = {
-    Status: StatusCode
-    Title: string
-    Detail: string
-    // Source: ?
-}
-
-[<RequireQualifiedAccess>]
-module ResponseError =
-    let format = function
-        | { Title = null; Detail = detail }
-        | { Title = ""; Detail = detail } ->
-            detail
-
-        | { Title = title; Detail = detail } ->
-            sprintf "%s (%s)" detail title
-
-type CommandResponse<'MetaData, 'ResponseData> = {
-    Schema: int
-    Id: ResponseId
-    CorrelationId: CorrelationId
-    CausationId: CausationId
-    Timestamp: string
-
-    Reactor: ReactorResponse
-    Requestor: Requestor
-
-    MetaData: 'MetaData
-    Data: Data<'ResponseData> option
-
-    ResponseTo: string
-    Response: StatusCode
-    Errors: ResponseError list
-}
-
-type CommandResponseError<'MetaData, 'ResponseData> =
-    | ParseError of string * exn
-    | ErrorResponse of CommandResponse<'MetaData, 'ResponseData>
-
-[<RequireQualifiedAccess>]
-module CommandResponse =
-    open FSharp.Data
-
-    type NotParsed = NotParsed
-
-    type private CommandResponseSchema = JsonProvider<"src/schema/response.json", SampleIsList = true>
-
-    let private formatDateTime (dateTimeOffset: DateTimeOffset) =
-        dateTimeOffset.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'")
-
-    let parseHttpStatusCode (code: int): HttpStatusCode = enum code
-
-    let parse serializedResponse = result {
-        try
-            let rawResponse =
-                serializedResponse
-                |> CommandResponseSchema.Parse
-
-            let data = rawResponse.Data.Attributes
-
-            let response: CommandResponse<NotParsed, NotParsed> =
-                {
-                    Schema = data.Schema
-                    Id = ResponseId data.Id
-                    CorrelationId = CorrelationId data.CorrelationId
-                    CausationId = CausationId data.CausationId
-                    Timestamp = data.Timestamp |> formatDateTime
-
-                    Reactor =
-                        ReactorResponse (
-                            Box.createFromStrings
-                                data.Reactor.Domain
-                                data.Reactor.Context
-                                data.Reactor.Purpose
-                                data.Reactor.Version
-                                data.Reactor.Zone
-                                data.Reactor.Bucket
-                        )
-                    Requestor =
-                        Requestor (
-                            Box.createFromStrings
-                                data.Requestor.Domain
-                                data.Requestor.Context
-                                data.Requestor.Purpose
-                                data.Requestor.Version
-                                data.Requestor.Zone
-                                data.Requestor.Bucket
-                        )
-
-                    MetaData = NotParsed
-                    Data = None
-
-                    ResponseTo = data.ResponseTo
-                    Response = StatusCode (parseHttpStatusCode data.Response)
-                    Errors =
-                        data.Errors
-                        |> Seq.map (fun e ->
-                            {
-                                Detail = e.Detail
-                                Status = StatusCode (parseHttpStatusCode e.Status)
-                                Title =
-                                    match e.Title with
-                                    | Some title -> title
-                                    | _ -> ""
-                            }
-                        )
-                        |> Seq.toList
-                }
-
-            return!
-                match response.Response, response.Errors with
-                | (StatusCode code), [] when (int code) < 400 -> Ok response
-                | _ -> Error (ErrorResponse response)
-        with
-        | e ->
-            return! Error (ParseError (serializedResponse, e))
-    }
-
-//
-// Command DTO
-//
-
-type ReactorDto = {
-    Domain: string
-    Context: string
-    Purpose: string
-    Version: string
-    Zone: string
-    Bucket: string
-}
-
-type RequestorDto = {
-    Domain: string
-    Context: string
-    Purpose: string
-    Version: string
-    Zone: string
-    Bucket: string
-}
-
-type ReplyToDto = {
-    Type: string
-    Identification: string
-}
-
-// Generic command data DTO
-
-type DataItemDto<'Value> = {
-    Value: 'Value
-    Type: string
-}
-
-[<RequireQualifiedAccess>]
-module DataItemDto =
-    let serialize serialize (item: DataItem<_>): DataItemDto<_> =
-        {
-            Value = item.Value |> serialize
-            Type = item.Type
-        }
-
-    let internal serializeScalar item = item |> serialize (fun a -> a :> obj)
-
 // Generic Command DTO
 
 type SynchronousCommandDto<'MetaDataDto, 'DataDto> = {
@@ -354,46 +93,6 @@ type CommandDto<'MetaDataDto, 'DataDto> =
     | Asynchronous of AsynchronousCommandDto<'MetaDataDto, 'DataDto>
 
 //
-// Modules
-//
-
-[<RequireQualifiedAccess>]
-module Reactor =
-    let internal serialize (Reactor boxPattern): ReactorDto =
-        {
-            Domain = boxPattern.Domain |> Domain.value
-            Context = boxPattern.Context |> Context.value
-            Purpose = boxPattern.Purpose |> PurposePattern.value
-            Version = boxPattern.Version |> VersionPattern.value
-            Zone = boxPattern.Zone |> ZonePattern.value
-            Bucket = boxPattern.Bucket |> BucketPattern.value
-        }
-
-[<RequireQualifiedAccess>]
-module Requestor =
-    let internal serialize (Requestor box): RequestorDto =
-        {
-            Domain = box.Domain |> Domain.value
-            Context = box.Context |> Context.value
-            Purpose = box.Purpose |> Purpose.value
-            Version = box.Version |> Version.value
-            Zone = box.Zone |> Zone.value
-            Bucket = box.Bucket |> Bucket.value
-        }
-
-[<RequireQualifiedAccess>]
-module ReplyTo =
-    let internal serialize (replyTo: ReplyTo): ReplyToDto =
-        {
-            Type = replyTo.Type
-            Identification = replyTo.Identification
-        }
-
-[<RequireQualifiedAccess>]
-module Data =
-    let data (Data data) = data
-
-//
 // Serialize Command
 //
 
@@ -401,6 +100,14 @@ type SerializeCommand<'MetaData, 'Data, 'MetaDataDto, 'DataDto, 'Error> =
     ('MetaData -> Result<'MetaDataDto, 'Error>) -> ('Data -> Result<'DataDto, 'Error>)
         -> Command<'MetaData, 'Data>
         -> Result<CommandDto<'MetaDataDto, 'DataDto>, 'Error>
+
+type CommandParseError =
+    | UnsupportedSchema of int
+    | RequestError of RequestError
+    | InvalidReactor
+    | InvalidRequestor
+    | MissingData
+    | Other of string
 
 [<RequireQualifiedAccess>]
 module Command =
@@ -453,6 +160,115 @@ module Command =
                     Data = data
                 }
             }
+
+    open FSharp.Data
+    open Lmc.Serializer
+    open Lmc.ErrorHandling.Result.Operators
+
+    type private CommandSchema = JsonProvider<"src/schema/command.json", SampleIsList = true>
+
+    let parse parseMetaData parseData serializedCommand = result {
+        try
+            let rawCommand =
+                serializedCommand
+                |> CommandSchema.Parse
+
+            if rawCommand.Schema <> 1 then
+                return! Error (UnsupportedSchema rawCommand.Schema)
+
+            let! request = Request.create rawCommand.Request <@> RequestError
+
+            let! reactor =
+                BoxPattern.createFromStrings (
+                    rawCommand.Reactor.Domain,
+                    rawCommand.Reactor.Context,
+                    rawCommand.Reactor.Purpose,
+                    rawCommand.Reactor.Version,
+                    rawCommand.Reactor.Zone,
+                    rawCommand.Reactor.Bucket
+                )
+                |> Result.ofOption InvalidReactor
+                |> Result.map Reactor
+
+            let! requestor =
+                Box.createFromStrings (
+                    rawCommand.Requestor.Domain,
+                    rawCommand.Requestor.Context,
+                    rawCommand.Requestor.Purpose,
+                    rawCommand.Requestor.Version,
+                    rawCommand.Requestor.Zone,
+                    rawCommand.Requestor.Bucket
+                )
+                |> Result.ofOption InvalidRequestor
+                |> Result.map Requestor
+
+            let! metaData = rawCommand.MetaData.JsonValue |> RawData |> parseMetaData
+            let! data =
+                rawCommand.Data
+                |> Result.ofOption MissingData
+                |> Result.bind (fun data -> data.JsonValue |> RawData |> parseData)
+
+            let id = CommandId rawCommand.Id
+            let correlationId = CorrelationId rawCommand.CorrelationId
+            let causationId = CausationId rawCommand.CausationId
+            let timestamp = rawCommand.Timestamp |> Serialize.dateTimeOffset
+
+            let ttl = rawCommand.Ttl |> TimeToLive.ofMiliSeconds
+
+            let authenticationBearer =
+                match rawCommand.AuthenticationBearer with
+                | Some authentication -> AuthenticationBearer authentication
+                | _ -> AuthenticationBearer.empty
+
+            return
+                match rawCommand.ReplyTo with
+                | Some replyTo ->
+                    Command.Asynchronous {
+                        Schema = 1
+                        Id = id
+                        CorrelationId = correlationId
+                        CausationId = causationId
+                        Timestamp = timestamp
+
+                        TimeToLive = ttl
+                        AuthenticationBearer = authenticationBearer
+
+                        Request = request
+
+                        Reactor = reactor
+                        Requestor = requestor
+                        ReplyTo = {
+                            Type = replyTo.Type
+                            Identification = replyTo.Identification |> Option.defaultValue ""
+                        }
+
+                        MetaData = metaData
+                        Data = data
+                    }
+
+                | _ ->
+                    Command.Synchronous {
+                        Schema = 1
+                        Id = id
+                        CorrelationId = correlationId
+                        CausationId = causationId
+                        Timestamp = timestamp
+
+                        TimeToLive = ttl
+                        AuthenticationBearer = authenticationBearer
+
+                        Request = request
+
+                        Reactor = reactor
+                        Requestor = requestor
+
+                        MetaData = metaData
+                        Data = data
+                    }
+        with
+        | e ->
+            return! Error (Other e.Message)
+    }
 
 [<RequireQualifiedAccess>]
 module CommandDto =

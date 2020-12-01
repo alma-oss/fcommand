@@ -1,4 +1,6 @@
 FSharp.Core
 FSharp.Data
 Lmc.ErrorHandling
+Lmc.Kafka
+Lmc.Serializer
 Lmc.ServiceIdentification

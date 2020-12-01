@@ -14,7 +14,7 @@ type ToolDir =
     | Local of string
 
 // ========================================================================================================
-// === F# / Library fake build ==================================================================== 1.0.0 =
+// === F# / Library fake build ==================================================================== 1.2.0 =
 // --------------------------------------------------------------------------------------------------------
 // Options:
 //  - no-clean   - disables clean of dirs in the first step (required on CI)
@@ -31,7 +31,7 @@ type ToolDir =
 // 1. Information about the project to be used at NuGet and in AssemblyInfo files and other FAKE configuration
 // --------------------------------------------------------------------------------------------------------
 
-let project = "Command"
+let project = "Lmc.Command"
 let summary = "Library which contains a Command types and basic modules."
 
 let release = ReleaseNotes.parse (System.IO.File.ReadAllLines "CHANGELOG.md" |> Seq.filter ((<>) "## Unreleased"))
@@ -144,6 +144,8 @@ Target.create "AssemblyInfo" (fun _ ->
         )
 
     !! "**/*.*proj"
+    -- "packages/**/*.*proj"
+    -- "paket-files/**/*.*proj"
     -- "example/**/*.*proj"
     |> Seq.map getProjectDetails
     |> Seq.iter (fun (projFileName, _, folderName, attributes) ->
@@ -155,12 +157,15 @@ Target.create "AssemblyInfo" (fun _ ->
 
 Target.create "Build" (fun _ ->
     !! "**/*.*proj"
+    -- "packages/**/*.*proj"
+    -- "paket-files/**/*.*proj"
+    -- "example/**/*.*proj"
     -- "example/**/*.*proj"
     |> Seq.iter (DotNet.build id)
 )
 
 Target.create "Lint" <| skipOn "no-lint" (fun _ ->
-    DotnetCore.installOrUpdateTool toolsDir "dotnet-fsharplint"
+    DotnetCore.installOrUpdateTool toolsDir "dotnet-fsharplint --version 0.16.5"
 
     let checkResult (messages: string list) =
         let rec check: string list -> unit = function
@@ -176,6 +181,9 @@ Target.create "Lint" <| skipOn "no-lint" (fun _ ->
         |> check
 
     !! "**/*.fsproj"
+    -- "packages/**/*.*proj"
+    -- "paket-files/**/*.*proj"
+    -- "example/**/*.*proj"
     |> Seq.map (fun fsproj ->
         match toolsDir with
         | Global ->

@@ -6,18 +6,18 @@ nuget FSharp.Data ~> 3.0
 
 git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nuget/
 # LMC Nuget dependencies:
-nuget Lmc.ErrorHandling ~> 1.6
-nuget Lmc.ServiceIdentification ~> 3.4
+nuget Lmc.ErrorHandling ~> 3.0
+nuget Lmc.Kafka ~> 11.0
+nuget Lmc.Serializer ~> 1.1
+nuget Lmc.ServiceIdentification ~> 4.0
+
+nuget Lmc.Metrics ~> 4.0.0
 
 group Tests
     storage: none
     source https://api.nuget.org/v3/index.json
     nuget Expecto
     nuget YoloDev.Expecto.TestSdk
-
-    git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nuget/
-    # LMC Nuget dependencies:
-    nuget Lmc.Serializer ~> 1.0
 
 // [ FAKE GROUP ]
 group Build

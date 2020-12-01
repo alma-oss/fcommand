@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Compile Include="StartProcessCommandTest.fs" />
+    <Compile Include="CommandResponseCreatedTest.fs" />
     <Compile Include="Tests.fs" />
   </ItemGroup>
 

@@ -48,7 +48,7 @@ module MetaData =
 
     [<RequireQualifiedAccess>]
     module MetaDataDto =
-        open CommonSerializer
+        open Lmc.Serializer
 
         type OnlyCreatedAt = {
             CreatedAt: string
@@ -56,7 +56,7 @@ module MetaData =
 
         let fromCreatedAt (CreatedAt createdAt) =
             {
-                CreatedAt = createdAt |> formatDateTime
+                CreatedAt = createdAt |> Serialize.dateTime
             }
 
         let serialize = function

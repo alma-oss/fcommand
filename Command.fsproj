@@ -14,10 +14,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="src/Utils.fs" />
     <Compile Include="src/Types.fs" />
     <Compile Include="src/MetaData.fs" />
     <Compile Include="src/Command.fs" />
-    <Compile Include="src/StartProcessCommand.fs" />
+    <Compile Include="src/Response.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Prepared commands -->
+    <Compile Include="src/Command/StartProcessCommand.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Prepared events -->
+    <Compile Include="src/Event/Event.fs" />
+    <Compile Include="src/Event/CommandResponseCreated.fs" />
   </ItemGroup>
 
   <Import Project=".paket\Paket.Restore.targets" />
