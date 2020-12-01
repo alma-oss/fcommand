@@ -19,9 +19,6 @@ module DtoError =
         then Error (WrongEventType (expectedType, event))
         else Ok ()
 
-    (* let fromParseError event parseError =
-        SpecificEventError (parseError |> ParseError.format, event) *)
-
     let format = function
         | WrongEventType (expectedType, event) -> sprintf "Event has wrong event type. Expected %s but %A given." expectedType event.Event
         | MissingResourceData event -> sprintf "Event has no resource\n%A" event

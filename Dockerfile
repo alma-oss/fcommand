@@ -11,6 +11,9 @@ COPY ./paket.lock /lib/
 COPY ./Command.fsproj /lib/
 COPY ./src /lib/src
 
+# tests
+COPY ./tests /lib/tests
+
 # others
 COPY ./.git /lib/.git
 COPY ./.config /lib/.config
