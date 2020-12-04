@@ -12,6 +12,11 @@ type CommandId = CommandId of Guid
 module CommandId =
     let value (CommandId id) = id
 
+    let tryParse (id: string) =
+        match id |> Guid.TryParse with
+        | true, uuid -> Some (CommandId uuid)
+        | _ -> None
+
 type CorrelationId = CorrelationId of Guid
 
 [<RequireQualifiedAccess>]

@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+- Add `Command.id` function
+- Add `CommandId.tryParse` function
 
 ## 4.0.0 - 2020-12-01
 - [**BC**] Use .net 5.0

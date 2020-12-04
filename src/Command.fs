@@ -111,6 +111,10 @@ type CommandParseError =
 
 [<RequireQualifiedAccess>]
 module Command =
+    let id = function
+        | Command.Asynchronous { Id = id }
+        | Command.Synchronous { Id = id } -> id
+
     let toDto: SerializeCommand<'MetaData, 'Data, 'MetaDataDto, 'DataDto, 'Error> =
         fun serializeMetadata serializeData -> function
         | Command.Synchronous command ->
