@@ -19,6 +19,7 @@
     <Compile Include="src/MetaData.fs" />
     <Compile Include="src/Command.fs" />
     <Compile Include="src/Response.fs" />
+    <Compile Include="src/CommandHandler.fs" />
   </ItemGroup>
 
   <ItemGroup>

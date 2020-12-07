@@ -224,6 +224,8 @@ module RawData =
             )
         | _ -> None
 
+    let (|Json|_|) (RawData data) = Some (data.ToString())
+
     let (|DataItem|_|) data: DataItem<_> option = maybe {
         let! v =
             match data with
@@ -241,6 +243,22 @@ module RawData =
         }
     }
 
+    let (|DataItemRaw|_|) data: DataItem<RawData> option = maybe {
+        let! v =
+            match data with
+            | Item "value" v -> Some v
+            | _ -> None
+
+        let! t =
+            match data with
+            | Item "type" t -> Some (t |> value)
+            | _ -> None
+
+        return {
+            Value = v
+            Type = t.AsString()
+        }
+    }
 
 //
 // Generic Meta Data

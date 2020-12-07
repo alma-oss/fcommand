@@ -4,6 +4,8 @@
 ## Unreleased
 - Add `Command.id` function
 - Add `CommandId.tryParse` function
+- Add `Command.toCommon` and a `CommonCommandData` type
+- Add `CommandHandler` type and module
 
 ## 4.0.0 - 2020-12-01
 - [**BC**] Use .net 5.0
