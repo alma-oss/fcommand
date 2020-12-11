@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+
+## 4.1.0 - 2020-12-11
 - Add `Command.id` function
 - Add `CommandId.tryParse` function
 - Add `Command.toCommon` and a `CommonCommandData` type
