@@ -187,6 +187,105 @@ asyncResult {   // AsyncResult<CommandResponse, string>
 }
 ```
 
+## Command handler
+> Command handler is a common way of handling commands.
+
+### Validation
+Before executing a command, there are a few validations for a given command.
+
+1. TTL
+    - check, that Command.timestamp + Command.ttl is still valid (`validTo > Now`)
+    - it should end with `408 Timeout`, if it is not valid
+2. Reactor
+    - Reactor is matched based on Command.reactor pattern
+    - if a reactor (_current command handler_) is not matching a Command.reactor _pattern_, it ends with an Error
+
+### Spot for data
+Spot is determine based on a Command.reactor and Command.requestor as follows
+
+1. Specified by reactor
+    - if a Command.reactor (_box pattern_) contains a predefined Spot, it is used as is
+
+    Command
+    ```json
+    {
+        ...
+        "reactor": {
+            ...
+            "zone": "my",
+            "bucket": "data"
+        },
+        "requestor": {
+            ...
+            "zone": "some",
+            "bucket": "bucket"
+        },
+        ...
+    }
+    ```
+    Spot
+    ```json
+    {
+        "zone": "my",
+        "bucket": "data"
+    }
+    ```
+
+2. Unspecified by reactor
+    - if a Command.reactor (_box pattern_) contains a `*` (_Any_) in the Spot, a Command.requestor.spot is used
+
+    Command
+    ```json
+    {
+        ...
+        "reactor": {
+            ...
+            "zone": "*",
+            "bucket": "*"
+        },
+        "requestor": {
+            ...
+            "zone": "some",
+            "bucket": "bucket"
+        },
+        ...
+    }
+    ```
+    Spot
+    ```json
+    {
+        "zone": "some",
+        "bucket": "bucket"
+    }
+    ```
+
+**NOTE**: It applies for `Spot`, `Zone` and `Bucket` in the same way
+
+Command
+```json
+{
+    ...
+    "reactor": {
+        ...
+        "zone": "all",
+        "bucket": "*"
+    },
+    "requestor": {
+        ...
+        "zone": "some",
+        "bucket": "bucket"
+    },
+    ...
+}
+```
+Spot
+```json
+{
+    "zone": "all",
+    "bucket": "bucket"
+}
+```
+
 ## Release
 1. Increment version in `Command.fsproj`
 2. Update `CHANGELOG.md`
