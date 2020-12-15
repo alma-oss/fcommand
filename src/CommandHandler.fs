@@ -48,7 +48,6 @@ module CommandHandler =
     type Validations = {
         TimeToLive: Validation
         Reactor: Validation
-        // AuthenticationBearer: Validation // todo<later>
     }
 
     let defaultValidations = {
@@ -88,8 +87,6 @@ module CommandHandler =
             let (Reactor reactorPattern) = common.Reactor
             if reactorPattern |> BoxPattern.isMatching currentReactor |> not then
                 return! AsyncResult.ofError (InvalidReactor (common.Reactor, currentReactor))
-
-        // todo<later> validate AuthorizationBearer
 
         return ()
     }
