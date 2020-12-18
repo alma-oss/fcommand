@@ -2,6 +2,7 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+- [**BC**] Change `CommandHandler` handle functions to create a CommandResponse and handle synchronous/asynchronous command directly
 
 ## 4.1.0 - 2020-12-11
 - Add `Command.id` function
