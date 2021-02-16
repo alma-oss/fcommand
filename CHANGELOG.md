@@ -2,6 +2,7 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+- Update dependencies
 
 ## 5.0.0 - 2020-12-18
 - [**BC**] Change `CommandHandler` handle functions to create a CommandResponse and handle synchronous/asynchronous command directly
