@@ -14,6 +14,7 @@ type CommandHandleError<'Error> =
     | InvalidHandler of handle: Request * given: Request
     | InvalidTimestamp of string
     | Timeout
+    | Unauthorized
     | InvalidReactor of Reactor * Box
     | HandleSpecificError of 'Error
 
@@ -24,6 +25,7 @@ module CommandHandleError =
         | InvalidHandler (expected, given) -> sprintf "[Command Handler] Command Handler<%s> is invalid for a given Command<%s>." (expected |> Request.value) (given |> Request.value)
         | InvalidTimestamp timestamp -> sprintf "[Command Handler] Command has an invalid timestamp %A." timestamp
         | Timeout -> "[Command Handler] Handling a command timeouted."
+        | Unauthorized -> "[Command Handler] Handling a command is unauthorized by a given authorization bearer in the command."
         | InvalidReactor (Reactor reactorPattern, reactor) -> sprintf "[Command Handler] Invalid Reactor %A called for a command, expecting %A." reactor reactorPattern
         | HandleSpecificError e -> e |> formatSpecificError |> sprintf "[Command Handler] Fail on a command specific error: %s"
 
@@ -113,14 +115,20 @@ module CommandHandler =
 
     let private formatResponseError formatError specificErrorTitle error: ResponseError =
         {
-            Status = StatusCode HttpStatusCode.BadRequest
-            Detail = error |> CommandHandleError.format formatError
+            Status =
+                match error with
+                | Timeout -> StatusCode HttpStatusCode.RequestTimeout
+                | Unauthorized -> StatusCode HttpStatusCode.Unauthorized
+                | _ -> StatusCode HttpStatusCode.BadRequest
+            Detail =
+                error |> CommandHandleError.format formatError
             Title =
                 match error with
                 | InvalidCommand _ -> "CommandHandler.InvalidCommand"
                 | InvalidHandler _ -> "CommandHandler.InvalidHandler"
                 | InvalidTimestamp _ -> "CommandHandler.InvalidTimestamp"
                 | Timeout -> "CommandHandler.Timeout"
+                | Unauthorized -> "CommandHandler.Unauthorized"
                 | InvalidReactor _ -> "CommandHandler.InvalidReactor"
                 | HandleSpecificError specific -> specific |> specificErrorTitle |> sprintf "CommandHandler.HandleSpecificError.%s"
         }

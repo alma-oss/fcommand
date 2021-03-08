@@ -360,7 +360,7 @@ module Command =
 
             return
                 match rawCommand.ReplyTo with
-                | Some replyTo ->
+                | Some replyTo when replyTo.Type <> "http" ->
                     Command.Asynchronous {
                         Schema = 1
                         Id = id
