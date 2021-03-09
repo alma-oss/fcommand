@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+
+## 5.2.0 - 2021-03-09
 - Change `Command.parse` to parse Synchronous Command even if it has a `replyTo` field, with direct response value
 - Allow response `id` either in the attributes or correctly in the resource.id field or in the attributes.response (*as it should be everywhere*)
 - Add `CommandResponseDto.toJson` function
