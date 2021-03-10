@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+
+## 5.3.0 - 2021-03-10
 - Change ttl validation to allow `0` (_or negative_) ttl as **infinite**
 
 ## 5.2.0 - 2021-03-09
