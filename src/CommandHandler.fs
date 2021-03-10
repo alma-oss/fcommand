@@ -86,12 +86,14 @@ module CommandHandler =
                 | _ -> Error (InvalidTimestamp common.Timestamp)
 
             let ttl = common.TimeToLive |> TimeToLive.value |> float
-            let validTo = timestamp.AddMilliseconds(ttl)
 
-            let now = DateTimeOffset.Now |> Serialize.dateTimeOffset |> DateTimeOffset.Parse
+            if ttl > 0. then
+                let validTo = timestamp.AddMilliseconds(ttl)
 
-            if validTo <= now then
-                return! Error Timeout
+                let now = DateTimeOffset.Now |> Serialize.dateTimeOffset |> DateTimeOffset.Parse
+
+                if validTo <= now then
+                    return! Error Timeout
 
         if validations.Reactor = Validation.Validate then
             let (Reactor reactorPattern) = common.Reactor
