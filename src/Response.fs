@@ -222,7 +222,9 @@ module CommandResponse =
                                 Requestor = requestor
 
                                 MetaData = RawData responseData.MetaData.JsonValue |> parseResponseMetaData
-                                Data = RawData responseData.Data.JsonValue |> parseData
+                                Data =
+                                    responseData.Data
+                                    |> Option.bind (fun data -> RawData data.JsonValue |> parseData)
 
                                 ResponseTo = responseData.ResponseTo
                                 Response = StatusCode (parseHttpStatusCode responseData.Response)
