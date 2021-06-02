@@ -2,6 +2,10 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+- Add literals for `ReplyTo`
+    - `ReplyTo.TypeHttp`
+    - `ReplyTo.IdentificationHttp`
+- Add predefined value `ReplyTo.Http`
 
 ## 5.3.0 - 2021-03-10
 - Change ttl validation to allow `0` (_or negative_) ttl as **infinite**
