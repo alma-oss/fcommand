@@ -182,6 +182,14 @@ module Requestor =
 
 [<RequireQualifiedAccess>]
 module ReplyTo =
+    let [<Literal>] TypeHttp = "http"
+    let [<Literal>] IdentificationHttp = "caller_connection"
+
+    let Http: ReplyTo = {
+        Type = TypeHttp
+        Identification = IdentificationHttp
+    }
+
     let internal serialize (replyTo: ReplyTo): ReplyToDto =
         {
             Type = replyTo.Type
