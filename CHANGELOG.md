@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+
+## 5.5.0 - 2021-06-01
 - Allow empty data in command response
 
 ## 5.4.0 - 2021-06-01
