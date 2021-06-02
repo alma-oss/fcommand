@@ -138,5 +138,41 @@
                 }
             }
         }
+    },
+    {
+        "data": {
+            "type": "commands",
+            "attributes": {
+                "response": {
+                    "schema": 1,
+                    "ttl": 2000,
+                    "id": "d7d8d98f-b4d8-4bb1-b931-ded6bcdd0400",
+                    "causation_id": "68fe6381-0a2d-4069-b3f3-4e8d408dd38c",
+                    "correlation_id": "68fe6381-0a2d-4069-b3f3-4e8d408dd38c",
+                    "timestamp": "2021-06-02T12:53:20.724327155Z",
+                    "data": null,
+                    "meta_data": null,
+                    "reactor": {
+                        "domain": "sc",
+                        "context": "createindependentserviceprocessadapter",
+                        "purpose": "common",
+                        "version": "stable",
+                        "bucket": "common",
+                        "zone": "all"
+                    },
+                    "requestor": {
+                        "domain": "sc",
+                        "context": "activities",
+                        "purpose": "common",
+                        "version": "stable",
+                        "bucket": "common",
+                        "zone": "all"
+                    },
+                    "response_to": "http",
+                    "response": 201,
+                    "errors": []
+                }
+            }
+        }
     }
 ]
