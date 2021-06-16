@@ -2,6 +2,7 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+- Validate ttl from both both sides of the time
 
 ## 5.5.0 - 2021-06-01
 - Allow empty data in command response
