@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+
+## 5.6.0 - 2021-06-16
 - Validate ttl from both both sides of the time
 
 ## 5.5.0 - 2021-06-01
