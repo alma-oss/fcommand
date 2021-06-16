@@ -194,8 +194,17 @@ asyncResult {   // AsyncResult<CommandResponse, string>
 Before executing a command, there are a few validations for a given command.
 
 1. TTL
-    - check, that Command.timestamp + Command.ttl is still valid (`validTo > Now`)
+    - check, that Command.timestamp + Command.ttl is still valid (`validFrom <= now && now <= validTo`)
     - it should end with `408 Timeout`, if it is not valid
+    ```
+            [<- valid ->]
+            ┌───────────┐
+            │           │
+    --------------------------------------> t
+            │           │
+            timestamp   ttl
+    ```
+
 2. Reactor
     - Reactor is matched based on Command.reactor pattern
     - if a reactor (_current command handler_) is not matching a Command.reactor _pattern_, it ends with an Error

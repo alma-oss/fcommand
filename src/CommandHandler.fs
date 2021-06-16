@@ -88,11 +88,13 @@ module CommandHandler =
             let ttl = common.TimeToLive |> TimeToLive.value |> float
 
             if ttl > 0. then
-                let validTo = timestamp.AddMilliseconds(ttl)
+                let validFrom = timestamp
+                let validTo = validFrom.AddMilliseconds(ttl)
 
                 let now = DateTimeOffset.Now |> Serialize.dateTimeOffset |> DateTimeOffset.Parse
+                let isValid = validFrom <= now && now <= validTo
 
-                if validTo <= now then
+                if not isValid then
                     return! Error Timeout
 
         if validations.Reactor = Validation.Validate then
