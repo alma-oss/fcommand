@@ -1,15 +1,15 @@
 framework: net5.0
 
 source https://api.nuget.org/v3/index.json
-nuget FSharp.Core
-nuget FSharp.Data ~> 3.0
+nuget FSharp.Core ~> 5.0
+nuget FSharp.Data ~> 4.0
 
 git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nuget/
 # LMC Nuget dependencies:
-nuget Lmc.ErrorHandling ~> 5.0
-nuget Lmc.Kafka ~> 12.1
+nuget Lmc.ErrorHandling ~> 5.1
+nuget Lmc.Kafka ~> 16.2
 nuget Lmc.Serializer ~> 2.0
-nuget Lmc.ServiceIdentification ~> 5.2
+nuget Lmc.ServiceIdentification ~> 5.4
 
 group Tests
     storage: none
