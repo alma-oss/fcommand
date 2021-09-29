@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+
+## 6.0.0 - 2021-09-29
 - [**BC**] Change `Command` type
     - Remove `Synchronous/Asynchronous` variants
 - [**BC**] Rename `CommandHandleResult` cases
