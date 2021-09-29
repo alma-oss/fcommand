@@ -184,148 +184,69 @@ module CommandResponse =
                 serializedResponse
                 |> CommandResponseSchema.Parse
 
-            let! response =
-                match rawResponse.Data.Attributes.Response.Record with
-                | Some responseData ->
-                    result {
-                        let! id = (rawResponse.Data.Id, Some responseData.Id) |> parseId
+            let responseData = rawResponse.Data.Attributes.Response
 
-                        let! reactor =
-                            parseReactor (
-                                responseData.Reactor.Domain,
-                                responseData.Reactor.Context,
-                                responseData.Reactor.Purpose,
-                                responseData.Reactor.Version,
-                                responseData.Reactor.Zone,
-                                responseData.Reactor.Bucket
-                            )
+            let! id = (rawResponse.Data.Id, Some responseData.Id) |> parseId
 
-                        let! requestor =
-                            parseRequestor (
-                                responseData.Requestor.Domain,
-                                responseData.Requestor.Context,
-                                responseData.Requestor.Purpose,
-                                responseData.Requestor.Version,
-                                responseData.Requestor.Zone,
-                                responseData.Requestor.Bucket
-                            )
+            let! reactor =
+                parseReactor (
+                    responseData.Reactor.Domain,
+                    responseData.Reactor.Context,
+                    responseData.Reactor.Purpose,
+                    responseData.Reactor.Version,
+                    responseData.Reactor.Zone,
+                    responseData.Reactor.Bucket
+                )
 
-                        let response: CommandResponse<GenericMetaData, 'ResponseData> =
-                            {
-                                Schema = responseData.Schema
-                                Id = id
-                                CorrelationId = CorrelationId responseData.CorrelationId
-                                CausationId = CausationId responseData.CausationId
-                                Timestamp = responseData.Timestamp |> Serialize.dateTimeOffset
+            let! requestor =
+                parseRequestor (
+                    responseData.Requestor.Domain,
+                    responseData.Requestor.Context,
+                    responseData.Requestor.Purpose,
+                    responseData.Requestor.Version,
+                    responseData.Requestor.Zone,
+                    responseData.Requestor.Bucket
+                )
 
-                                Reactor = reactor
-                                Requestor = requestor
+            let response: CommandResponse<GenericMetaData, 'ResponseData> = {
+                Schema = responseData.Schema
+                Id = id
+                CorrelationId = CorrelationId responseData.CorrelationId
+                CausationId = CausationId responseData.CausationId
+                Timestamp = responseData.Timestamp |> Serialize.dateTimeOffset
 
-                                MetaData = RawData responseData.MetaData.JsonValue |> parseResponseMetaData
-                                Data =
-                                    responseData.Data
-                                    |> Option.bind (fun data -> RawData data.JsonValue |> parseData)
+                Reactor = reactor
+                Requestor = requestor
 
-                                ResponseTo = responseData.ResponseTo
-                                Response = StatusCode (parseHttpStatusCode responseData.Response)
-                                Errors =
-                                    responseData.Errors
-                                    |> Seq.map (fun e ->
-                                        let error: ResponseError = {
-                                            Detail = e.Detail
-                                            Status = StatusCode (parseHttpStatusCode e.Status)
-                                            Title =
-                                                match e.Title with
-                                                | Some title -> title
-                                                | _ -> ""
-                                        }
-                                        error
-                                    )
-                                    |> Seq.toList
-                            }
+                MetaData = RawData responseData.MetaData.JsonValue |> parseResponseMetaData
+                Data =
+                    responseData.Data
+                    |> Option.bind (fun data -> RawData data.JsonValue |> parseData)
 
-                        return response
-                    }
-                | _ ->
-                    result {
-                        let data = rawResponse.Data.Attributes
-
-                        let require field value =
-                            value |> Result.ofOption (MissingAttribute field)
-
-                        let! schema = data.Schema |> require "schema"
-                        let! id = (rawResponse.Data.Id, data.Id) |> parseId
-                        let! correlationId = data.CorrelationId |> require "correlation_id"
-                        let! causationId = data.CausationId |> require "causation_id"
-                        let! timestamp = data.Timestamp |> require "timestamp"
-
-                        let! reactorData = data.Reactor |> require "reactor"
-                        let! reactor =
-                            parseReactor (
-                                reactorData.Domain,
-                                reactorData.Context,
-                                reactorData.Purpose,
-                                reactorData.Version,
-                                reactorData.Zone,
-                                reactorData.Bucket
-                            )
-
-                        let! requestorData = data.Requestor |> require "requestor"
-                        let! requestor =
-                            parseRequestor (
-                                requestorData.Domain,
-                                requestorData.Context,
-                                requestorData.Purpose,
-                                requestorData.Version,
-                                requestorData.Zone,
-                                requestorData.Bucket
-                            )
-
-                        let! responseTo = data.ResponseTo |> require "response_to"
-                        let! response = data.Response.Number |> require "response"
-
-                        let response: CommandResponse<GenericMetaData, 'ResponseData> =
-                            {
-                                Schema = schema
-                                Id = id
-                                CorrelationId = CorrelationId correlationId
-                                CausationId = CausationId causationId
-                                Timestamp = timestamp |> Serialize.dateTimeOffset
-
-                                Reactor = reactor
-                                Requestor = requestor
-
-                                MetaData = RawData data.MetaData.JsonValue |> parseResponseMetaData
-                                Data = data.Data |> Option.bind (fun d -> RawData d.JsonValue |> parseData)
-
-                                ResponseTo = responseTo
-                                Response = StatusCode (parseHttpStatusCode response)
-                                Errors =
-                                    data.Errors
-                                    |> Seq.map (fun e ->
-                                        let error: ResponseError = {
-                                            Detail = e.Detail
-                                            Status = StatusCode (parseHttpStatusCode e.Status)
-                                            Title =
-                                                match e.Title with
-                                                | Some title -> title
-                                                | _ -> ""
-                                        }
-                                        error
-                                    )
-                                    |> Seq.toList
-                            }
-
-                        return response
-                    }
+                ResponseTo = responseData.ResponseTo
+                Response = StatusCode (parseHttpStatusCode responseData.Response)
+                Errors =
+                    responseData.Errors
+                    |> Seq.map (fun e ->
+                        let error: ResponseError = {
+                            Detail = e.Detail
+                            Status = StatusCode (parseHttpStatusCode e.Status)
+                            Title =
+                                match e.Title with
+                                | Some title -> title
+                                | _ -> ""
+                        }
+                        error
+                    )
+                    |> Seq.toList
+            }
 
             return!
                 match response.Response, response.Errors with
                 | (StatusCode code), [] when (int code) < 400 -> Ok response
                 | _ -> Error (ErrorResponse (response |> ignoreMetadata))
         with
-        | e ->
-            return! Error (ParseError (serializedResponse, e))
+        | e -> return! Error (ParseError (serializedResponse, e))
     }
 
     let toDto metaData data (response: CommandResponse<_, _>): CommandResponseDto<_, _> =

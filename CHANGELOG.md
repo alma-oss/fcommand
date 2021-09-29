@@ -8,6 +8,7 @@
     - `AsynchronousCommandStarted` -> `CommandStarted`
     - `AsynchronousCommandNotStarted` -> `CommandNotStarted`
     - `SynchronousCommandResponse` -> `CommandResponse`
+- [**BC**] Remove support for old command response format
 
 ## 5.8.0 - 2021-09-29
 - Add `DataItemDto.serializeResult` function
