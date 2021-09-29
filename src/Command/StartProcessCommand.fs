@@ -24,7 +24,7 @@ module StartProcess =
         | Bool of string * DataItem<bool>
         | Object of string * DataItem<obj>
 
-    type Command = private Command of ProcessName * AsynchronousCommand<MetaData, CommandData>
+    type Command = private Command of ProcessName * Command<MetaData, CommandData>
 
     and CommandData = {
         Process: DataItem<ProcessName>
@@ -35,15 +35,14 @@ module StartProcess =
     module Command =
         let internal command (Command (_, command)) = command
 
-        let create processName requestor reactor authentication ttl replyTo processVariables =
+        let private createCommand commandId processName requestor reactor authentication ttl replyTo (correlationId, causationId) processVariables =
             let now = DateTime.Now
-            let commandId = Guid.NewGuid() |> CommandId
 
             Command (processName, {
                 Schema = 1
                 Id = commandId
-                CorrelationId = CorrelationId.fromCommandId commandId
-                CausationId = CausationId.fromCommandId commandId
+                CorrelationId = correlationId
+                CausationId = causationId
                 Timestamp = now |> Serialize.dateTime
 
                 TimeToLive = ttl
@@ -61,6 +60,17 @@ module StartProcess =
                 }
             })
 
+        let createInCorrelation processName requestor reactor authentication ttl replyTo (correlationId, causationId) processVariables =
+            createCommand (CommandId.create()) processName requestor reactor authentication ttl replyTo (correlationId, causationId) processVariables
+
+        let create processName requestor reactor authentication ttl replyTo processVariables =
+            let commandId = CommandId.create()
+            let correlation = (
+                CorrelationId.fromCommandId commandId,
+                CausationId.fromCommandId commandId
+            )
+
+            createCommand (CommandId.create()) processName requestor reactor authentication ttl replyTo correlation processVariables
     //
     // Serialize DTO
     //
@@ -96,7 +106,6 @@ module StartProcess =
 
         let fromCommand serializeObj (Command (processName, command)) =
             command
-            |> Command.Asynchronous
             |> Command.toDto
                 MetaDataDto.serialize
                 (serializeCommandData serializeObj)
@@ -104,5 +113,4 @@ module StartProcess =
     // Public DTO functions
 
     let serialize serializeObj: Serialize<Command, MetaData, CommandData, CommandDto> =
-        fun command ->
-            command |> Dto.fromCommand serializeObj
+        Dto.fromCommand serializeObj

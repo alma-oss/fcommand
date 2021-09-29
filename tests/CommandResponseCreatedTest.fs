@@ -239,9 +239,7 @@ let createAndSerialize =
 
             match parsedCommand with
             | Error e -> failtestf "Parsing a command ends with %A" e
-            | Ok (Command.Synchronous _) -> failtestf "Asynchronous command was expected."
-
-            | Ok (Command.Asynchronous doSomething) ->
+            | Ok doSomething ->
                 let response =
                     let (Reactor reactorPattern) = doSomething.Reactor
                     let reactor =

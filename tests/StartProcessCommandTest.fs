@@ -210,7 +210,7 @@ let createAndSerializeCommand =
                         | Ok parsed -> parsed
                         | Error error -> failtestf "Serialzed Command cannot be parsed again. %A" error
 
-                    let startProcessCommand = startProcessCommand |> StartProcess.Command.command |> Command.Asynchronous
+                    let startProcessCommand = startProcessCommand |> StartProcess.Command.command
 
                     // those objects are equal, but for some reason, they are not equal, so they are serialized to string and compared
                     Expect.equal

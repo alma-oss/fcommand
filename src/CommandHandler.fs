@@ -42,9 +42,9 @@ type CommandHandler<'Command, 'MetaData, 'CommandData, 'ResponseData, 'Error> = 
 }
 
 type CommandHandleResult<'MetaData, 'ResponseData, 'Error> =
-    | AsynchronousCommandStarted
-    | AsynchronousCommandNotStarted of CommandHandleError<'Error> list
-    | SynchronousCommandResponse of CommandResponse<'MetaData, 'ResponseData>
+    | CommandStarted
+    | CommandNotStarted of CommandHandleError<'Error> list
+    | CommandResponse of CommandResponse<'MetaData, 'ResponseData>
 
 [<RequireQualifiedAccess>]
 module CommandHandler =
@@ -149,17 +149,17 @@ module CommandHandler =
 
     open Result.Operators
 
-    let private persistAsyncCommandResponse persistAsyncResponse (asyncCommand: AsynchronousCommand<_, _>) handleAsyncCommand =
+    let private persistCommandResponse persistResponse (command: Command<_, _>) handleCommand =
         async {
-            let! commandResponse = handleAsyncCommand
+            let! commandResponse = handleCommand
 
-            do! commandResponse |> persistAsyncResponse asyncCommand.Id asyncCommand.ReplyTo
+            do! commandResponse |> persistResponse command.Id command.ReplyTo
         }
-        |> Async.Catch
-        |> Async.map (Result.ofChoice >> Result.teeError (eprintfn "[CommandHandler][Async] %A") >> ignore)
+        |> AsyncResult.ofAsyncCatch id
+        |> Async.map (Result.teeError (eprintfn "[CommandHandler][Async] %A") >> ignore)
         |> Async.Start
 
-        AsynchronousCommandStarted
+        CommandStarted
 
     let handleWith
         validations
@@ -191,38 +191,36 @@ module CommandHandler =
             match validate with
             | Ok command ->
                 match command with
-                | Command.Synchronous _ ->
+                | { ReplyTo = ReplyTo.IsHttpCallerConnection } ->
                     async {
                         let! responseData = command |> handler.Handler
 
                         return
                             responseData
-                            |> createCommandResponse reactor formatError specificErrorTitle (command |> Command.toCommon) "http"
-                            |> SynchronousCommandResponse
+                            |> createCommandResponse reactor formatError specificErrorTitle (command |> Command.toCommon) command.ReplyTo.Type
+                            |> CommandResponse
                     }
                     |> Async.RunSynchronously
 
-                | Command.Asynchronous asyncCommand ->
+                | command ->
                     async {
                         let! handleResult = command |> handler.Handler
 
                         return
                             handleResult
-                            |> createCommandResponse reactor formatError specificErrorTitle (command |> Command.toCommon) asyncCommand.ReplyTo.Type
+                            |> createCommandResponse reactor formatError specificErrorTitle (command |> Command.toCommon) command.ReplyTo.Type
                     }
-                    |> persistAsyncCommandResponse persistAsyncResponse asyncCommand
+                    |> persistCommandResponse persistAsyncResponse command
 
             | Error validationErrors ->
                 match command |> handler.GetCommand with
-                | Command.Synchronous _ as command ->
+                | { ReplyTo = ReplyTo.IsHttpCallerConnection } as command ->
                     validationErrors
                     |> List.map (formatResponseError formatError specificErrorTitle)
-                    |> createResponse (command |> Command.toCommon) reactor "http" (StatusCode HttpStatusCode.UnprocessableEntity) None
-                    |> SynchronousCommandResponse
+                    |> createResponse (command |> Command.toCommon) reactor command.ReplyTo.Type (StatusCode HttpStatusCode.UnprocessableEntity) None
+                    |> CommandResponse
 
-                | Command.Asynchronous _ ->
-                    validationErrors
-                    |> AsynchronousCommandNotStarted
+                | _ -> CommandNotStarted validationErrors
 
     let handle customValidation reactor formatError specificErrorTitle persistAsyncResponse (handler: CommandHandler<'Command, 'MetaData, 'CommandData, 'ResponseData, 'Error>) (command: 'Command) =
         handleWith defaultValidations customValidation reactor formatError specificErrorTitle persistAsyncResponse handler command

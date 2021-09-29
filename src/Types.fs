@@ -17,6 +17,9 @@ module CommandId =
         | true, uuid -> Some (CommandId uuid)
         | _ -> None
 
+    let create () =
+        Guid.NewGuid() |> CommandId
+
 type CorrelationId = CorrelationId of Guid
 
 [<RequireQualifiedAccess>]
@@ -194,10 +197,14 @@ module ReplyTo =
     let [<Literal>] TypeHttp = "http"
     let [<Literal>] IdentificationHttp = "caller_connection"
 
-    let Http: ReplyTo = {
+    let HttpCallerConnection: ReplyTo = {
         Type = TypeHttp
         Identification = IdentificationHttp
     }
+
+    let (|IsHttpCallerConnection|_|) = function
+        | replyTo when replyTo = HttpCallerConnection -> Some IsHttpCallerConnection
+        | _ -> None
 
     let internal serialize (replyTo: ReplyTo): ReplyToDto =
         {
