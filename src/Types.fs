@@ -150,6 +150,15 @@ module DataItemDto =
             Type = item.Type
         }
 
+    let serializeResult serialize (item: DataItem<_>): Result<DataItemDto<_>, _> = result {
+        let! value = item.Value |> serialize
+
+        return {
+            Value = value
+            Type = item.Type
+        }
+    }
+
     let internal serializeScalar item = item |> serialize (fun a -> a :> obj)
 
 //
