@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+
+## 5.8.0 - 2021-09-29
 - Add `DataItemDto.serializeResult` function
 
 ## 5.7.0 - 2021-09-27
