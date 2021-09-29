@@ -23,25 +23,7 @@ type CommonCommandData = {
     Requestor: Requestor
 }
 
-type SynchronousCommand<'MetaData, 'CommandData> = {
-    Schema: int
-    Id: CommandId
-    CorrelationId: CorrelationId
-    CausationId: CausationId
-    Timestamp: string
-
-    TimeToLive: TimeToLive
-    AuthenticationBearer: AuthenticationBearer
-    Request: Request
-
-    Reactor: Reactor
-    Requestor: Requestor
-
-    MetaData: 'MetaData
-    Data: Data<'CommandData>
-}
-
-type AsynchronousCommand<'MetaData, 'CommandData> = {
+type Command<'MetaData, 'CommandData> = {
     Schema: int
     Id: CommandId
     CorrelationId: CorrelationId
@@ -60,31 +42,9 @@ type AsynchronousCommand<'MetaData, 'CommandData> = {
     Data: Data<'CommandData>
 }
 
-type Command<'MetaData, 'CommandData> =
-    | Synchronous of SynchronousCommand<'MetaData, 'CommandData>
-    | Asynchronous of AsynchronousCommand<'MetaData, 'CommandData>
-
 // Generic Command DTO
 
-type SynchronousCommandDto<'MetaDataDto, 'DataDto> = {
-    Schema: int
-    Id: Guid
-    CorrelationId: Guid
-    CausationId: Guid
-    Timestamp: string
-
-    Ttl: int
-    AuthenticationBearer: string
-    Request: string
-
-    Reactor: ReactorDto
-    Requestor: RequestorDto
-
-    MetaData: 'MetaDataDto
-    Data: 'DataDto
-}
-
-type AsynchronousCommandDto<'MetaDataDto, 'DataDto> = {
+type CommandDto<'MetaDataDto, 'DataDto> = {
     Schema: int
     Id: Guid
     CorrelationId: Guid
@@ -102,10 +62,6 @@ type AsynchronousCommandDto<'MetaDataDto, 'DataDto> = {
     MetaData: 'MetaDataDto
     Data: 'DataDto
 }
-
-type CommandDto<'MetaDataDto, 'DataDto> =
-    | Synchronous of SynchronousCommandDto<'MetaDataDto, 'DataDto>
-    | Asynchronous of AsynchronousCommandDto<'MetaDataDto, 'DataDto>
 
 //
 // Serialize Command
@@ -126,178 +82,98 @@ type CommandParseError =
 
 [<RequireQualifiedAccess>]
 module Command =
-    let id = function
-        | Command.Asynchronous { Id = id }
-        | Command.Synchronous { Id = id } -> id
+    let id ({ Id = id }: Command<_, _>) = id
+    let request ({ Request = request }: Command<_, _>) = request
 
-    let request = function
-        | Command.Asynchronous { Request = request }
-        | Command.Synchronous { Request = request } -> request
+    let (|OfRequest|_|) request ({ Request = commandRequest }: Command<_, _>) =
+        if request = commandRequest then Some OfRequest else None
 
-    let (|OfRequest|_|) request = function
-        | Command.Asynchronous { Request = r }
-        | Command.Synchronous { Request = r }
-            -> if request = r then Some OfRequest else None
-
-    let toCommon = function
-        | Command.Asynchronous { Schema = schema; Id = id; CorrelationId = correlationId; CausationId = causationId; Timestamp = timestamp; TimeToLive = timeToLive; AuthenticationBearer = authenticationBearer; Request = request; Reactor = reactor; Requestor = requestor }
-        | Command.Synchronous { Schema = schema; Id = id; CorrelationId = correlationId; CausationId = causationId; Timestamp = timestamp; TimeToLive = timeToLive; AuthenticationBearer = authenticationBearer; Request = request; Reactor = reactor; Requestor = requestor }
-            -> {
-                Schema = schema
-                Id = id
-                CorrelationId = correlationId
-                CausationId = causationId
-                Timestamp = timestamp
-                TimeToLive = timeToLive
-                AuthenticationBearer = authenticationBearer
-                Request = request
-                Reactor = reactor
-                Requestor = requestor
-            }
+    let toCommon ({ Schema = schema; Id = id; CorrelationId = correlationId; CausationId = causationId; Timestamp = timestamp; TimeToLive = timeToLive; AuthenticationBearer = authenticationBearer; Request = request; Reactor = reactor; Requestor = requestor }: Command<_, _>) =
+        {
+            Schema = schema
+            Id = id
+            CorrelationId = correlationId
+            CausationId = causationId
+            Timestamp = timestamp
+            TimeToLive = timeToLive
+            AuthenticationBearer = authenticationBearer
+            Request = request
+            Reactor = reactor
+            Requestor = requestor
+        }
 
     let toDto: SerializeCommand<'MetaData, 'Data, 'MetaDataDto, 'DataDto, 'Error> =
-        fun serializeMetadata serializeData -> function
-        | Command.Synchronous command ->
-            result {
-                let! metaData = command.MetaData |> serializeMetadata
-                let! data = command.Data |> Data.data |> serializeData
+        fun serializeMetadata serializeData command -> result {
+            let! metaData = command.MetaData |> serializeMetadata
+            let! data = command.Data |> Data.data |> serializeData
 
-                return Synchronous {
-                    Schema = command.Schema
-                    Id = command.Id |> CommandId.value
-                    CorrelationId = command.CorrelationId |> CorrelationId.value
-                    CausationId = command.CausationId |> CausationId.value
-                    Timestamp = command.Timestamp
+            return {
+                Schema = command.Schema
+                Id = command.Id |> CommandId.value
+                CorrelationId = command.CorrelationId |> CorrelationId.value
+                CausationId = command.CausationId |> CausationId.value
+                Timestamp = command.Timestamp
 
-                    Ttl = command.TimeToLive |> TimeToLive.value
-                    AuthenticationBearer = command.AuthenticationBearer |> AuthenticationBearer.value
-                    Request = command.Request |> Request.value
+                Ttl = command.TimeToLive |> TimeToLive.value
+                AuthenticationBearer = command.AuthenticationBearer |> AuthenticationBearer.value
+                Request = command.Request |> Request.value
 
-                    Reactor = command.Reactor |> Reactor.serialize
-                    Requestor = command.Requestor |> Requestor.serialize
+                Reactor = command.Reactor |> Reactor.serialize
+                Requestor = command.Requestor |> Requestor.serialize
+                ReplyTo = command.ReplyTo |> ReplyTo.serialize
 
-                    MetaData = metaData
-                    Data = data
-                }
+                MetaData = metaData
+                Data = data
             }
-        | Command.Asynchronous command ->
-            result {
-                let! metaData = command.MetaData |> serializeMetadata
-                let! data = command.Data |> Data.data |> serializeData
+        }
 
-                return Asynchronous {
-                    Schema = command.Schema
-                    Id = command.Id |> CommandId.value
-                    CorrelationId = command.CorrelationId |> CorrelationId.value
-                    CausationId = command.CausationId |> CausationId.value
-                    Timestamp = command.Timestamp
+    let bindMetaData (f: 'MetaData -> Result<'NewMetaData, 'Error>) (command: Command<'MetaData, 'Data>): Result<Command<'NewMetaData, 'Data>, 'Error> =
+        result {
+            let! metaData = command.MetaData |> f
 
-                    Ttl = command.TimeToLive |> TimeToLive.value
-                    AuthenticationBearer = command.AuthenticationBearer |> AuthenticationBearer.value
-                    Request = command.Request |> Request.value
+            return {
+                Schema = command.Schema
+                Id = command.Id
+                CorrelationId = command.CorrelationId
+                CausationId = command.CausationId
+                Timestamp = command.Timestamp
 
-                    Reactor = command.Reactor |> Reactor.serialize
-                    Requestor = command.Requestor |> Requestor.serialize
-                    ReplyTo = command.ReplyTo |> ReplyTo.serialize
+                TimeToLive = command.TimeToLive
+                AuthenticationBearer = command.AuthenticationBearer
+                Request = command.Request
 
-                    MetaData = metaData
-                    Data = data
-                }
+                Reactor = command.Reactor
+                Requestor = command.Requestor
+                ReplyTo = command.ReplyTo
+
+                MetaData = metaData
+                Data = command.Data
             }
+        }
 
-    let bindMetaData (f: 'MetaData -> Result<'NewMetaData, 'Error>): Command<'MetaData, 'Data> -> Result<Command<'NewMetaData, 'Data>, 'Error> = function
-        | Command.Asynchronous command ->
-            result {
-                let! metaData = command.MetaData |> f
+    let bindData (f: Data<'Data> -> Result<Data<'NewData>, 'Error>) (command: Command<'MetaData, 'Data>): Result<Command<'MetaData, 'NewData>, 'Error> =
+        result {
+            let! data = command.Data |> f
 
-                return Command.Asynchronous {
-                    Schema = command.Schema
-                    Id = command.Id
-                    CorrelationId = command.CorrelationId
-                    CausationId = command.CausationId
-                    Timestamp = command.Timestamp
+            return {
+                Schema = command.Schema
+                Id = command.Id
+                CorrelationId = command.CorrelationId
+                CausationId = command.CausationId
+                Timestamp = command.Timestamp
 
-                    TimeToLive = command.TimeToLive
-                    AuthenticationBearer = command.AuthenticationBearer
-                    Request = command.Request
+                TimeToLive = command.TimeToLive
+                AuthenticationBearer = command.AuthenticationBearer
+                Request = command.Request
 
-                    Reactor = command.Reactor
-                    Requestor = command.Requestor
-                    ReplyTo = command.ReplyTo
+                Reactor = command.Reactor
+                Requestor = command.Requestor
+                ReplyTo = command.ReplyTo
 
-                    MetaData = metaData
-                    Data = command.Data
-                }
+                MetaData = command.MetaData
+                Data = data
             }
-        | Command.Synchronous command ->
-            result {
-                let! metaData = command.MetaData |> f
-
-                return Command.Synchronous {
-                    Schema = command.Schema
-                    Id = command.Id
-                    CorrelationId = command.CorrelationId
-                    CausationId = command.CausationId
-                    Timestamp = command.Timestamp
-
-                    TimeToLive = command.TimeToLive
-                    AuthenticationBearer = command.AuthenticationBearer
-                    Request = command.Request
-
-                    Reactor = command.Reactor
-                    Requestor = command.Requestor
-
-                    MetaData = metaData
-                    Data = command.Data
-                }
-            }
-
-    let bindData (f: Data<'Data> -> Result<Data<'NewData>, 'Error>): Command<'MetaData, 'Data> -> Result<Command<'MetaData, 'NewData>, 'Error> = function
-        | Command.Asynchronous command ->
-            result {
-                let! data = command.Data |> f
-
-                return Command.Asynchronous {
-                    Schema = command.Schema
-                    Id = command.Id
-                    CorrelationId = command.CorrelationId
-                    CausationId = command.CausationId
-                    Timestamp = command.Timestamp
-
-                    TimeToLive = command.TimeToLive
-                    AuthenticationBearer = command.AuthenticationBearer
-                    Request = command.Request
-
-                    Reactor = command.Reactor
-                    Requestor = command.Requestor
-                    ReplyTo = command.ReplyTo
-
-                    MetaData = command.MetaData
-                    Data = data
-                }
-            }
-        | Command.Synchronous command ->
-            result {
-                let! data = command.Data |> f
-
-                return Command.Synchronous {
-                    Schema = command.Schema
-                    Id = command.Id
-                    CorrelationId = command.CorrelationId
-                    CausationId = command.CausationId
-                    Timestamp = command.Timestamp
-
-                    TimeToLive = command.TimeToLive
-                    AuthenticationBearer = command.AuthenticationBearer
-                    Request = command.Request
-
-                    Reactor = command.Reactor
-                    Requestor = command.Requestor
-
-                    MetaData = command.MetaData
-                    Data = data
-                }
-            }
+        }
 
     open FSharp.Data
     open Lmc.Serializer
@@ -358,51 +234,28 @@ module Command =
                 | Some authentication -> AuthenticationBearer authentication
                 | _ -> AuthenticationBearer.empty
 
-            return
-                match rawCommand.ReplyTo with
-                | Some replyTo when replyTo.Type <> "http" ->
-                    Command.Asynchronous {
-                        Schema = 1
-                        Id = id
-                        CorrelationId = correlationId
-                        CausationId = causationId
-                        Timestamp = timestamp
+            return {
+                Schema = 1
+                Id = id
+                CorrelationId = correlationId
+                CausationId = causationId
+                Timestamp = timestamp
 
-                        TimeToLive = ttl
-                        AuthenticationBearer = authenticationBearer
+                TimeToLive = ttl
+                AuthenticationBearer = authenticationBearer
 
-                        Request = request
+                Request = request
 
-                        Reactor = reactor
-                        Requestor = requestor
-                        ReplyTo = {
-                            Type = replyTo.Type
-                            Identification = replyTo.Identification |> Option.defaultValue ""
-                        }
+                Reactor = reactor
+                Requestor = requestor
+                ReplyTo = {
+                    Type = rawCommand.ReplyTo.Type
+                    Identification = rawCommand.ReplyTo.Identification
+                }
 
-                        MetaData = metaData
-                        Data = data
-                    }
-
-                | _ ->
-                    Command.Synchronous {
-                        Schema = 1
-                        Id = id
-                        CorrelationId = correlationId
-                        CausationId = causationId
-                        Timestamp = timestamp
-
-                        TimeToLive = ttl
-                        AuthenticationBearer = authenticationBearer
-
-                        Request = request
-
-                        Reactor = reactor
-                        Requestor = requestor
-
-                        MetaData = metaData
-                        Data = data
-                    }
+                MetaData = metaData
+                Data = data
+            }
         with
         | e ->
             return! Error (Other e.Message)
@@ -410,9 +263,8 @@ module Command =
 
 [<RequireQualifiedAccess>]
 module CommandDto =
-    let serialize (serialize: obj -> string) = function
-        | Synchronous command -> serialize command
-        | Asynchronous command -> serialize command
+    let serialize (serialize: obj -> string) (command: CommandDto<_, _>) =
+        serialize command
 
 type DtoError<'MetaData, 'Data> =
     | SpecificEventError of message: string * Command<'MetaData, 'Data>
