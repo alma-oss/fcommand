@@ -76,7 +76,7 @@ type CommandParseError =
     | UnsupportedSchema of int
     | RequestError of RequestError
     | InvalidReactor
-    | InvalidRequestor
+    | InvalidRequestor of BoxError
     | MissingData
     | Other of string
 
@@ -205,7 +205,7 @@ module Command =
                 |> Result.map Reactor
 
             let! requestor =
-                Box.createFromStrings (
+                Create.Box (
                     rawCommand.Requestor.Domain,
                     rawCommand.Requestor.Context,
                     rawCommand.Requestor.Purpose,
@@ -213,7 +213,7 @@ module Command =
                     rawCommand.Requestor.Zone,
                     rawCommand.Requestor.Bucket
                 )
-                |> Result.ofOption InvalidRequestor
+                |> Result.mapError InvalidRequestor
                 |> Result.map Requestor
 
             let! metaData = rawCommand.MetaData.JsonValue |> RawData |> parseMetaData

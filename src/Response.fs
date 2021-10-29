@@ -72,8 +72,8 @@ type CommandResponseError<'ResponseData> =
     | AmbiguousResponseId of Guid * Guid
     | MissingResponseId
     | MissingAttribute of string
-    | InvalidReactor
-    | InvalidRequestor
+    | InvalidReactor of BoxError
+    | InvalidRequestor of BoxError
     | ErrorResponse of CommandResponse<NoMetaData, 'ResponseData>
 
 //
@@ -166,18 +166,6 @@ module CommandResponse =
         | _, Some id -> Ok (ResponseId id)
         | _ -> Error MissingResponseId
 
-    let private parseReactor reactor =
-        reactor
-        |> Box.createFromStrings
-        |> Result.ofOption InvalidReactor
-        |> Result.map ReactorResponse
-
-    let private parseRequestor requestor =
-        requestor
-        |> Box.createFromStrings
-        |> Result.ofOption InvalidRequestor
-        |> Result.map Requestor
-
     let parse (parseResponseMetaData: RawData -> GenericMetaData) parseData serializedResponse = result {
         try
             let rawResponse =
@@ -189,7 +177,7 @@ module CommandResponse =
             let! id = (rawResponse.Data.Id, Some responseData.Id) |> parseId
 
             let! reactor =
-                parseReactor (
+                Create.Box (
                     responseData.Reactor.Domain,
                     responseData.Reactor.Context,
                     responseData.Reactor.Purpose,
@@ -197,9 +185,11 @@ module CommandResponse =
                     responseData.Reactor.Zone,
                     responseData.Reactor.Bucket
                 )
+                |> Result.mapError InvalidReactor
+                |> Result.map ReactorResponse
 
             let! requestor =
-                parseRequestor (
+                Create.Box (
                     responseData.Requestor.Domain,
                     responseData.Requestor.Context,
                     responseData.Requestor.Purpose,
@@ -207,6 +197,8 @@ module CommandResponse =
                     responseData.Requestor.Zone,
                     responseData.Requestor.Bucket
                 )
+                |> Result.mapError InvalidRequestor
+                |> Result.map Requestor
 
             let response: CommandResponse<GenericMetaData, 'ResponseData> = {
                 Schema = responseData.Schema
