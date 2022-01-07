@@ -4,7 +4,6 @@ namespace Lmc.Command
 module StartProcess =
     open System
     open Lmc.Command
-    open Lmc.ServiceIdentification
     open Lmc.Serializer
     open Lmc.ErrorHandling
 

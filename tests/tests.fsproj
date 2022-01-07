@@ -3,13 +3,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Command.fsproj">
-      <Name>Command.fsproj</Name>
-    </ProjectReference>
+    <ProjectReference Include="../Command.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
