@@ -1,5 +1,4 @@
 FSharp.Core
 
-group Tests
-    Expecto
-    YoloDev.Expecto.TestSdk
+Expecto
+YoloDev.Expecto.TestSdk
