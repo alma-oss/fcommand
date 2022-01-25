@@ -2,6 +2,8 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+- Update kafka library
+- Add function `CommandResponseCreated.Event.key`
 
 ## 7.0.0 - 2022-01-07
 - [**BC**] Use net6.0

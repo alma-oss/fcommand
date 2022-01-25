@@ -4,6 +4,8 @@ namespace Lmc.Command.Event
 module CommandResponseCreated =
     open System
     open FSharp.Data
+    open Lmc.Kafka
+    open Lmc.ServiceIdentification
     open Lmc.ErrorHandling
     open Lmc.ErrorHandling.Result.Operators
     open Lmc.Command
@@ -45,8 +47,6 @@ module CommandResponseCreated =
 
     [<RequireQualifiedAccess>]
     module MetaData =
-        open Lmc.Kafka
-
         type private MetaDataSchema = JsonProvider<"src/schema/CommandResponseCreated/metaData.json", SampleIsList = true>
 
         let parse metaData =
@@ -299,3 +299,11 @@ module CommandResponseCreated =
 
         let serialize serialize serializeResponse event =
             event |> toInternal |> serializeInternal serializeResponse serialize
+
+        let key event =
+            let (InternalEvent event) = event |> toInternal
+
+            MessageKey.Delimited [
+                event.Zone |> Zone.value
+                event.Bucket |> Bucket.value
+            ]

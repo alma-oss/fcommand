@@ -317,4 +317,7 @@ let createAndSerialize =
                         "Serialized CommandResponseCreated.Event"
                         (normalizeId >> normalizeCreatedAt >> normalizeTimestamp)
                         expectedResponseEvent
+
+                ("all,test", "CommandResponseCreated key should created with spot")
+                ||> Expect.equal (commandResponseCreated |> Event.CommandResponseCreated.Event.key |> Lmc.Kafka.MessageKey.value)
     ]
