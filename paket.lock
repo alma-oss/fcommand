@@ -23,7 +23,7 @@ NUGET
       FSharp.Core (>= 4.7.2)
       Microsoft.Bcl.AsyncInterfaces (>= 5.0)
     FSharp.Core (6.0.3)
-    FSharp.Data (4.2.7)
+    FSharp.Data (4.2.8)
       FSharp.Core (>= 4.7.2)
     Google.Protobuf (3.19.4)
     Grpc (2.44)
@@ -530,9 +530,9 @@ NUGET
       FSharp.Core (>= 4.6)
       System.Collections.Immutable (>= 1.5)
   remote: paket-files/git_bitbucket.lmc.cz7999/archi/nuget-server/nuget
-    Lmc.ErrorHandling (6.0.0)
-      FSharp.Core (>= 6.0.1)
-    Lmc.Kafka (20.2.0)
+    Lmc.ErrorHandling (6.1.0)
+      FSharp.Core (>= 6.0.3)
+    Lmc.Kafka (21.0.0)
       Confluent.Kafka (>= 1.8.2)
       FSharp.Control.AsyncSeq (>= 3.2.1)
       FSharp.Core (>= 6.0.3)
@@ -542,7 +542,7 @@ NUGET
       Lmc.Serializer (>= 3.0)
       Lmc.ServiceIdentification (>= 6.0)
       Lmc.State (>= 5.0)
-      Lmc.Tracing (>= 4.0)
+      Lmc.Tracing (>= 5.0)
       Microsoft.Extensions.Logging (>= 6.0)
     Lmc.Logging (6.0.0)
       FSharp.Core (>= 6.0.1)
@@ -566,7 +566,7 @@ NUGET
     Lmc.State (5.0.0)
       FSharp.Core (>= 6.0.1)
       Lmc.ErrorHandling (>= 6.0)
-    Lmc.Tracing (4.0.0)
+    Lmc.Tracing (5.0.0)
       FSharp.Core (>= 6.0.3)
       FSharp.Data (>= 4.2.7)
       Jaeger (>= 1.0.3)
@@ -577,7 +577,7 @@ NUGET
       Microsoft.Extensions.Logging (>= 6.0)
 GIT
   remote: ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git
-     (8e3decc1d7dc2032319954076d08308f9f456452)
+     (10dd160d8922ce416dc9c590488c6208a86f06a7)
       path: /nuget/
 GROUP Build
 STORAGE: NONE
