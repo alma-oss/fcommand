@@ -6,8 +6,8 @@ nuget FSharp.Data ~> 4.0
 
 git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nuget/
 # LMC Nuget dependencies:
-nuget Lmc.ErrorHandling ~> 6.0
-nuget Lmc.Kafka ~> 20.2
+nuget Lmc.ErrorHandling ~> 6.1
+nuget Lmc.Kafka ~> 21.0
 nuget Lmc.Serializer ~> 3.0
 nuget Lmc.ServiceIdentification ~> 6.0
 
