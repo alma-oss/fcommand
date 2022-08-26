@@ -140,69 +140,69 @@ let createAndSerialize =
             }"""
 
             let expectedResponseEvent = """{
-  "schema": 1,
-  "id": "e41b1383-52c3-4dfd-8ddc-cfd081916a85",
-  "correlation_id": "89fb9f01-0c34-4a60-a607-c3d3d3fca02a",
-  "causation_id": "148d14de-63c2-4539-a84d-389dfb40b326",
-  "timestamp": "2020-05-12T14:50:25.983Z",
-  "event": "command_response_created",
-  "domain": "test",
-  "context": "deriver",
-  "purpose": "common",
-  "version": "stable",
-  "zone": "all",
-  "bucket": "test",
-  "meta_data": {
-    "created_at": "2020-11-30T15:24:05.818Z"
-  },
-  "key_data": {
-    "command_id": "99c196e0-98c8-44f4-b6b0-77a80d6353cf"
-  },
-  "domain_data": {
-    "response": {
-      "schema": 1,
-      "id": "e103fe50-68ac-407d-bdbb-0e5738f9f64c",
-      "correlation_id": "89fb9f01-0c34-4a60-a607-c3d3d3fca02a",
-      "causation_id": "148d14de-63c2-4539-a84d-389dfb40b326",
-      "timestamp": "2020-05-12T14:50:25.983Z",
-      "reactor": {
-        "domain": "test",
-        "context": "reactor",
-        "purpose": "common",
-        "version": "stable",
-        "zone": "all",
-        "bucket": "test"
-      },
-      "requestor": {
-        "domain": "test",
-        "context": "command",
-        "purpose": "common",
-        "version": "test",
-        "zone": "all",
-        "bucket": "common"
-      },
-      "meta_data": {
+    "schema": 1,
+    "id": "e41b1383-52c3-4dfd-8ddc-cfd081916a85",
+    "correlation_id": "89fb9f01-0c34-4a60-a607-c3d3d3fca02a",
+    "causation_id": "148d14de-63c2-4539-a84d-389dfb40b326",
+    "timestamp": "2020-05-12T14:50:25.983Z",
+    "event": "command_response_created",
+    "domain": "test",
+    "context": "deriver",
+    "purpose": "common",
+    "version": "stable",
+    "zone": "all",
+    "bucket": "test",
+    "meta_data": {
         "created_at": "2020-11-30T15:24:05.818Z"
-      },
-      "data": {
-        "first_name": {
-          "value": "First",
-          "type": "string"
-        },
-        "last_name": {
-          "value": "Surname",
-          "type": "string"
-        },
-        "age": {
-          "value": 42,
-          "type": "int"
+    },
+    "key_data": {
+        "command_id": "99c196e0-98c8-44f4-b6b0-77a80d6353cf"
+    },
+    "domain_data": {
+        "response": {
+            "schema": 1,
+            "id": "e103fe50-68ac-407d-bdbb-0e5738f9f64c",
+            "correlation_id": "89fb9f01-0c34-4a60-a607-c3d3d3fca02a",
+            "causation_id": "148d14de-63c2-4539-a84d-389dfb40b326",
+            "timestamp": "2020-05-12T14:50:25.983Z",
+            "reactor": {
+                "domain": "test",
+                "context": "reactor",
+                "purpose": "common",
+                "version": "stable",
+                "zone": "all",
+                "bucket": "test"
+            },
+            "requestor": {
+                "domain": "test",
+                "context": "command",
+                "purpose": "common",
+                "version": "test",
+                "zone": "all",
+                "bucket": "common"
+            },
+            "meta_data": {
+                "created_at": "2020-11-30T15:24:05.818Z"
+            },
+            "data": {
+                "first_name": {
+                    "value": "First",
+                    "type": "string"
+                },
+                "last_name": {
+                    "value": "Surname",
+                    "type": "string"
+                },
+                "age": {
+                    "value": 42,
+                    "type": "int"
+                }
+            },
+            "response_to": "kafka",
+            "response": 200,
+            "errors": []
         }
-      },
-      "response_to": "kafka",
-      "response": 200,
-      "errors": []
     }
-  }
 }"""
 
             let parsedCommand =
