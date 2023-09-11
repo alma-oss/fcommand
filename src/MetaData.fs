@@ -1,4 +1,4 @@
-namespace Lmc.Command
+namespace Alma.Command
 
 [<AutoOpen>]
 module MetaData =
@@ -48,7 +48,7 @@ module MetaData =
 
     [<RequireQualifiedAccess>]
     module MetaDataDto =
-        open Lmc.Serializer
+        open Alma.Serializer
 
         type OnlyCreatedAt = {
             CreatedAt: string

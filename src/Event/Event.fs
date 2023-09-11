@@ -1,6 +1,6 @@
-namespace Lmc.Command.Event
+namespace Alma.Command.Event
 
-open Lmc.Kafka
+open Alma.Kafka
 
 //
 // Dto
@@ -35,7 +35,7 @@ type SerializeEventOrFail<'Event> = SerializeEventDto -> 'Event -> string
 //
 
 module Transform =
-    let toInternal metaData (event: Lmc.Kafka.Event<_, _, _>): Lmc.Kafka.Event<_, _, _> =
+    let toInternal metaData (event: Alma.Kafka.Event<_, _, _>): Alma.Kafka.Event<_, _, _> =
         {
             Schema = event.Schema
             Id = event.Id

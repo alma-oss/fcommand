@@ -1,8 +1,8 @@
-namespace Lmc.Command
+namespace Alma.Command
 
 open System
-open Lmc.ServiceIdentification
-open Lmc.ErrorHandling
+open Alma.ServiceIdentification
+open Alma.ErrorHandling
 
 //
 // Generic Command
@@ -176,8 +176,8 @@ module Command =
         }
 
     open FSharp.Data
-    open Lmc.Serializer
-    open Lmc.ErrorHandling.Result.Operators
+    open Alma.Serializer
+    open Alma.ErrorHandling.Result.Operators
 
     type private CommandSchema = JsonProvider<"src/schema/command.json", SampleIsList = true>
 

@@ -1,11 +1,11 @@
-namespace Lmc.Command
+namespace Alma.Command
 
 [<RequireQualifiedAccess>]
 module StartProcess =
     open System
-    open Lmc.Command
-    open Lmc.Serializer
-    open Lmc.ErrorHandling
+    open Alma.Command
+    open Alma.Serializer
+    open Alma.ErrorHandling
 
     let private request = Request "start_process"
 

@@ -1,7 +1,7 @@
-module Lmc.Command.Test.StartProcessCommand
+module Alma.Command.Test.StartProcessCommand
 
 open Expecto
-open Lmc.Command
+open Alma.Command
 
 let orFail = function
     | Some value -> value
@@ -9,7 +9,7 @@ let orFail = function
 
 [<AutoOpen>]
 module ApplicationLogic =
-    open Lmc.ServiceIdentification
+    open Alma.ServiceIdentification
 
     type ActionRequestToken = ActionRequestToken of string
 
@@ -33,7 +33,7 @@ module ApplicationLogic =
 
 [<AutoOpen>]
 module TestLogic =
-    open Lmc.ServiceIdentification
+    open Alma.ServiceIdentification
 
     let private box context =
         (Box.createFromStrings("test", context, "common", "test", "all", "common")).Value
@@ -135,7 +135,7 @@ module TestLogic =
         ]
 
 open FSharp.Data
-open Lmc.Serializer
+open Alma.Serializer
 
 [<Tests>]
 let createAndSerializeCommand =
