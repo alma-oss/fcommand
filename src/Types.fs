@@ -1,8 +1,8 @@
-namespace Lmc.Command
+namespace Alma.Command
 
 open System
-open Lmc.ServiceIdentification
-open Lmc.ErrorHandling
+open Alma.ServiceIdentification
+open Alma.ErrorHandling
 
 // Simple types
 

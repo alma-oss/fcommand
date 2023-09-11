@@ -1,9 +1,9 @@
-namespace Lmc.Command
+namespace Alma.Command
 
 open System
 open System.Net
-open Lmc.ErrorHandling
-open Lmc.ServiceIdentification
+open Alma.ErrorHandling
+open Alma.ServiceIdentification
 
 //
 // Errors
@@ -48,7 +48,7 @@ type CommandHandleResult<'MetaData, 'ResponseData, 'Error> =
 
 [<RequireQualifiedAccess>]
 module CommandHandler =
-    open Lmc.Serializer
+    open Alma.Serializer
 
     [<RequireQualifiedAccess>]
     type Validation =

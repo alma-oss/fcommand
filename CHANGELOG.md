@@ -2,6 +2,7 @@
 
 <!-- There is always Unreleased section on the top. Subsections (Add, Changed, Fix, Removed) should be Add as needed. -->
 ## Unreleased
+- [**BC**] Use `Alma` namespace
 
 ## 9.0.0 - 2023-08-11
 - [**BC**] Use net7.0

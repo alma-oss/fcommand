@@ -9,14 +9,20 @@ F-Command
 
 Add following into `paket.dependencies`
 ```
-git ssh://git@bitbucket.lmc.cz:7999/archi/nuget-server.git master Packages: /nuget/
+source https://nuget.pkg.github.com/almacareer/index.json username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%"
 # LMC Nuget dependencies:
-nuget Lmc.Command
+nuget Alma.Command
+```
+
+NOTE: For local development, you have to create ENV variables with your github personal access token.
+```sh
+export PRIVATE_FEED_USER='{GITHUB USERNANME}'
+export PRIVATE_FEED_PASS='{TOKEN}'	# with permissions: read:packages
 ```
 
 Add following into `paket.references`
 ```
-Lmc.Command
+Alma.Command
 ```
 
 ## Command types
@@ -78,8 +84,8 @@ Create your own command module:
 [<RequireQualifiedAccess>]
 module MyCommand =
     open System
-    open Lmc.Command
-    open Lmc.Command.CommonSerializer
+    open Alma.Command
+    open Alma.Command.CommonSerializer
     open ServiceIdentification
 
     let private request = "my_command_name" |> Request.create |> Result.orFail
@@ -153,7 +159,7 @@ module MyCommand =
 Then use your command:
 
 ```fs
-open Lmc.Command
+open Alma.Command
 
 asyncResult {   // AsyncResult<CommandResponse, string>
     let myCommand =         // MyCommand.Command
@@ -164,7 +170,7 @@ asyncResult {   // AsyncResult<CommandResponse, string>
             api.Authentication
             (TimeToLive.ofSeconds 2)
 
-    let! myCommandDto =     // Lmc.Command.CommandDto
+    let! myCommandDto =     // Alma.Command.CommandDto
         myCommand
         |> MyCommand.serialize
         |> AsyncResult.ofResult <@> DtoError.format
@@ -178,7 +184,7 @@ asyncResult {   // AsyncResult<CommandResponse, string>
         |> Api.sendCommand api
         |> AsyncResult.ofAsync
 
-    let! commandResponse =  // Lmc.Command.CommandResponse<NotParsed, NotParsed>
+    let! commandResponse =  // Alma.Command.CommandResponse<NotParsed, NotParsed>
         response
         |> CommandResponse.parse <@> (sprintf "Error: %A")
         |> AsyncResult.ofResult
@@ -299,20 +305,17 @@ Spot
 1. Increment version in `Command.fsproj`
 2. Update `CHANGELOG.md`
 3. Commit new version and tag it
-4. Run `$ fake build target release`
-5. Go to `nuget-server` repo, run `faket build target copyAll` and push new versions
 
 ## Development
 ### Requirements
 - [dotnet core](https://dotnet.microsoft.com/learn/dotnet/hello-world-tutorial)
-- [FAKE](https://fake.build/fake-gettingstarted.html)
 
 ### Build
 ```bash
-fake build
+./build.sh build
 ```
 
-### Watch
+### Tests
 ```bash
-fake build target watch
+./build.sh -t tests
 ```

@@ -1,13 +1,13 @@
-module Lmc.Command.Test.CommandResponseCreated
+module Alma.Command.Test.CommandResponseCreated
 
 open System
 open System.Net
 open Expecto
 open FSharp.Data
-open Lmc.Command
-open Lmc.ServiceIdentification
-open Lmc.ErrorHandling
-open Lmc.Serializer
+open Alma.Command
+open Alma.ServiceIdentification
+open Alma.ErrorHandling
+open Alma.Serializer
 
 let orFail = function
     | Some value -> value
@@ -319,5 +319,5 @@ let createAndSerialize =
                         expectedResponseEvent
 
                 ("all,test", "CommandResponseCreated key should created with spot")
-                ||> Expect.equal (commandResponseCreated |> Event.CommandResponseCreated.Event.key |> Lmc.Kafka.MessageKey.value)
+                ||> Expect.equal (commandResponseCreated |> Event.CommandResponseCreated.Event.key |> Alma.Kafka.MessageKey.value)
     ]

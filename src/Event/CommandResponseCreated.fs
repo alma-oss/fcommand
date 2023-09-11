@@ -1,17 +1,17 @@
-namespace Lmc.Command.Event
+namespace Alma.Command.Event
 
 [<RequireQualifiedAccess>]
 module CommandResponseCreated =
     open System
     open FSharp.Data
-    open Lmc.Kafka
-    open Lmc.ServiceIdentification
-    open Lmc.ErrorHandling
-    open Lmc.ErrorHandling.Result.Operators
-    open Lmc.Command
+    open Alma.Kafka
+    open Alma.ServiceIdentification
+    open Alma.ErrorHandling
+    open Alma.ErrorHandling.Result.Operators
+    open Alma.Command
 
-    type KafkaEvent<'KeyData, 'MetaData, 'DomainData> = Lmc.Kafka.Event<'KeyData, 'MetaData, 'DomainData>
-    module KafkaEvent = Lmc.Kafka.Event
+    type KafkaEvent<'KeyData, 'MetaData, 'DomainData> = Alma.Kafka.Event<'KeyData, 'MetaData, 'DomainData>
+    module KafkaEvent = Alma.Kafka.Event
 
     //
     // Event types and constants
@@ -93,11 +93,11 @@ module CommandResponseCreated =
             | Complete
             | WithoutMetaData
 
-        let parseEvent parseType parseResponseMetaData (parseResponseData: _ -> Data<'ResponseData> option) (rawEvent: Lmc.Kafka.RawEvent) =
+        let parseEvent parseType parseResponseMetaData (parseResponseData: _ -> Data<'ResponseData> option) (rawEvent: Alma.Kafka.RawEvent) =
             result {
                 do! EventType.assertSame (Name, rawEvent.Event) <@> (fun _ -> ParseError.InvalidEventType)
 
-                let (Lmc.Kafka.RawData keyDataJsonValue) = rawEvent.KeyData
+                let (Alma.Kafka.RawData keyDataJsonValue) = rawEvent.KeyData
                 let parsedKeyData =
                     keyDataJsonValue.ToString()
                     |> KeyDataSchema.Parse
@@ -109,7 +109,7 @@ module CommandResponseCreated =
                         CommandId = commandId
                     }
 
-                let (Lmc.Kafka.RawData domainDataJsonValue) = rawEvent.DomainData.Value
+                let (Alma.Kafka.RawData domainDataJsonValue) = rawEvent.DomainData.Value
                 let parsedDomainData =
                     domainDataJsonValue.ToString()
                     |> DomainDataSchema.Parse
@@ -170,12 +170,12 @@ module CommandResponseCreated =
     //
 
     module private Deriver =
-        open Lmc.Kafka
-        open Lmc.ServiceIdentification
+        open Alma.Kafka
+        open Alma.ServiceIdentification
 
         let deriveFromCommandResponse (deriver: Box) commandId (response: CommandResponse<GenericMetaData, 'ResponseData>) =
-            let correlationId (Lmc.Command.CorrelationId id) = Lmc.Kafka.CorrelationId id
-            let causationId (Lmc.Command.CausationId id) = Lmc.Kafka.CausationId id
+            let correlationId (Alma.Command.CorrelationId id) = Alma.Kafka.CorrelationId id
+            let causationId (Alma.Command.CausationId id) = Alma.Kafka.CausationId id
 
             InternalEvent {
                 Schema = 1
@@ -234,10 +234,10 @@ module CommandResponseCreated =
         Response: CommandResponseDto<'ResponseMetaDataDto, 'ResponseDataDto>
     }
 
-    type EventDto<'ResponseMetaDataDto, 'ResponseDataDto> = Lmc.Kafka.EventDto<Lmc.Kafka.NoData, KeyDataDto, MetaDataDto.OnlyCreatedAt, DomainDataDto<'ResponseMetaDataDto, 'ResponseDataDto>>
+    type EventDto<'ResponseMetaDataDto, 'ResponseDataDto> = Alma.Kafka.EventDto<Alma.Kafka.NoData, KeyDataDto, MetaDataDto.OnlyCreatedAt, DomainDataDto<'ResponseMetaDataDto, 'ResponseDataDto>>
 
     module private Dto =
-        open Lmc.Serializer
+        open Alma.Serializer
 
         let private serializeMetaData: MetaData -> Result<MetaDataDto.OnlyCreatedAt, _> = fun m ->
             Ok {
@@ -262,7 +262,7 @@ module CommandResponseCreated =
                 serializeMetaData
                 (serializeKeyData >> Ok)
                 (serializeDomainData serializeResponse >> Ok)
-            <!> Lmc.Kafka.EventDto.serialize serialize
+            <!> Alma.Kafka.EventDto.serialize serialize
 
     // Public Dto functions
 
@@ -279,11 +279,11 @@ module CommandResponseCreated =
 
     [<RequireQualifiedAccess>]
     module Event =
-        let toCommon: Event<_> -> Lmc.Kafka.CommonEvent = function
+        let toCommon: Event<_> -> Alma.Kafka.CommonEvent = function
             | Complete (InternalEvent event) -> event |> KafkaEvent.toCommon
             | WithoutMetaData (InternalEventWithtoutMetaData event) -> event |> KafkaEvent.toCommon
 
-        let box event = event |> toCommon |> Lmc.Kafka.CommonEvent.box
+        let box event = event |> toCommon |> Alma.Kafka.CommonEvent.box
 
         let keyData: Event<_> -> KeyData = function
             | Complete (InternalEvent { KeyData = keyData }) -> keyData

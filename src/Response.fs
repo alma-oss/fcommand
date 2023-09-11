@@ -1,10 +1,10 @@
-namespace Lmc.Command
+namespace Alma.Command
 
 open System
 open System.Net
-open Lmc.ServiceIdentification
-open Lmc.Serializer
-open Lmc.ErrorHandling
+open Alma.ServiceIdentification
+open Alma.Serializer
+open Alma.ErrorHandling
 
 //
 // Common types
