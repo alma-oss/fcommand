@@ -4,7 +4,7 @@ open System
 open System.Net
 open Alma.ServiceIdentification
 open Alma.Serializer
-open Alma.ErrorHandling
+open Feather.ErrorHandling
 
 //
 // Common types
