@@ -6,8 +6,11 @@
     <OutputType>Library</OutputType>
     <PackageId>Alma.Command</PackageId>
     <Version>12.1.0</Version>
-    <RepositoryUrl>https://github.com/almacareer/prc-fcommand.git</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/almacareer/prc-fcommand</PackageProjectUrl>
+    <Authors>Almacareer</Authors>
+    <Description>Library which contains a Command types and basic modules.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/alma-oss/fcommand.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/alma-oss/fcommand</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

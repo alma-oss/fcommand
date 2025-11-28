@@ -2,7 +2,7 @@ namespace Alma.Command
 
 open System
 open Alma.ServiceIdentification
-open Alma.ErrorHandling
+open Feather.ErrorHandling
 
 // Simple types
 

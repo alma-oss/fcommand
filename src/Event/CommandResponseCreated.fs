@@ -6,8 +6,8 @@ module CommandResponseCreated =
     open FSharp.Data
     open Alma.Kafka
     open Alma.ServiceIdentification
-    open Alma.ErrorHandling
-    open Alma.ErrorHandling.Result.Operators
+    open Feather.ErrorHandling
+    open Feather.ErrorHandling.Result.Operators
     open Alma.Command
 
     type KafkaEvent<'KeyData, 'MetaData, 'DomainData> = Alma.Kafka.Event<'KeyData, 'MetaData, 'DomainData>

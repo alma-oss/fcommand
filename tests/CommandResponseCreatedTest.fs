@@ -6,7 +6,7 @@ open Expecto
 open FSharp.Data
 open Alma.Command
 open Alma.ServiceIdentification
-open Alma.ErrorHandling
+open Feather.ErrorHandling
 open Alma.Serializer
 
 let orFail = function

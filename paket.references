@@ -1,6 +1,6 @@
 FSharp.Core
 FSharp.Data
-Alma.ErrorHandling
+Feather.ErrorHandling
 Alma.Kafka
 Alma.Serializer
 Alma.ServiceIdentification

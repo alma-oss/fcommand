@@ -2,7 +2,7 @@ namespace Alma.Command
 
 open System
 open Alma.ServiceIdentification
-open Alma.ErrorHandling
+open Feather.ErrorHandling
 
 //
 // Generic Command
@@ -177,7 +177,7 @@ module Command =
 
     open FSharp.Data
     open Alma.Serializer
-    open Alma.ErrorHandling.Result.Operators
+    open Feather.ErrorHandling.Result.Operators
 
     type private CommandSchema = JsonProvider<"src/schema/command.json", SampleIsList = true>
 
