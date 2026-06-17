@@ -1,5 +1,9 @@
 # Alma.Command (fcommand)
 
+This repo ships Agent Skill for the `Alma.Command` library. Compatible agents discover it automatically; see `.agents/skills/fcommand/SKILL.md`.
+
+## Project Purpose
+
 Open-source F# library (`Alma.Command` NuGet package) providing generic Command types, serialization/deserialization, command handler infrastructure, and command response handling for the Alma platform's CQRS/event-driven architecture. Used by downstream microservices to define, send, parse, and handle domain commands over Kafka.
 
 ## Tech Stack
