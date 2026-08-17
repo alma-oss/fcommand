@@ -14,7 +14,7 @@ Open-source F# library (`Alma.Command` NuGet package) providing generic Command 
   - `FSharp.Core` ~> 10.0
   - `FSharp.Data` ~> 6.0 (JSON type providers for schema-based parsing)
   - `Feather.ErrorHandling` ~> 2.0 (Result/AsyncResult computation expressions)
-  - `Alma.Kafka` ~> 30.0 (Kafka event types: `Event`, `EventId`, `EventName`, `MetaData`, etc.)
+  - `Alma.Kafka` ~> 30.2 (Kafka event types: `Event`, `EventId`, `EventName`, `MetaData`, etc.)
   - `Alma.Serializer` ~> 9.0 (JSON serialization, `Serialize.dateTime`, `Serialize.toJson`)
   - `Alma.ServiceIdentification` ~> 11.0 (Domain/Context/Purpose/Version/Zone/Bucket — "Box" model)
 
