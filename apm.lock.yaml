@@ -1,0 +1,113 @@
+lockfile_version: '1'
+dependencies: []
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/skills/fcommand
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/fcommand/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:ef65250d6af43c78a0fee9e46e20c869a6b90a5e587501dad09510b6c70ae497
+- kind: project-relative
+  target: claude
+  value: .claude/skills/fcommand/references/anti-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:33e34b49882945afe9eed51bca3020e63ce5878f482562dc083c643086aa20b6
+- kind: project-relative
+  target: claude
+  value: .claude/skills/fcommand/references/examples.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:96ffaca1f594e8daddd3ef03e1b6144fdefafbe7337c238a1682ee6643030ead
+- kind: project-relative
+  target: claude
+  value: .claude/skills/fcommand/references/preferred-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:908ae9407c13770d5848c1d46dcdff9f7cfa9fc558288209d10e4aede5f8c723
+- kind: project-relative
+  target: legacy
+  value: .agents/skills/fcommand
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+- kind: project-relative
+  target: legacy
+  value: .agents/skills/fcommand/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:ef65250d6af43c78a0fee9e46e20c869a6b90a5e587501dad09510b6c70ae497
+- kind: project-relative
+  target: legacy
+  value: .agents/skills/fcommand/references/anti-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:33e34b49882945afe9eed51bca3020e63ce5878f482562dc083c643086aa20b6
+- kind: project-relative
+  target: legacy
+  value: .agents/skills/fcommand/references/examples.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:96ffaca1f594e8daddd3ef03e1b6144fdefafbe7337c238a1682ee6643030ead
+- kind: project-relative
+  target: legacy
+  value: .agents/skills/fcommand/references/preferred-patterns.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:908ae9407c13770d5848c1d46dcdff9f7cfa9fc558288209d10e4aede5f8c723
+local_deployed_files:
+- .agents/skills/fcommand
+- .agents/skills/fcommand/SKILL.md
+- .agents/skills/fcommand/references/anti-patterns.md
+- .agents/skills/fcommand/references/examples.md
+- .agents/skills/fcommand/references/preferred-patterns.md
+- .claude/skills/fcommand
+- .claude/skills/fcommand/SKILL.md
+- .claude/skills/fcommand/references/anti-patterns.md
+- .claude/skills/fcommand/references/examples.md
+- .claude/skills/fcommand/references/preferred-patterns.md
+local_deployed_file_hashes:
+  .agents/skills/fcommand/SKILL.md: sha256:ef65250d6af43c78a0fee9e46e20c869a6b90a5e587501dad09510b6c70ae497
+  .agents/skills/fcommand/references/anti-patterns.md: sha256:33e34b49882945afe9eed51bca3020e63ce5878f482562dc083c643086aa20b6
+  .agents/skills/fcommand/references/examples.md: sha256:96ffaca1f594e8daddd3ef03e1b6144fdefafbe7337c238a1682ee6643030ead
+  .agents/skills/fcommand/references/preferred-patterns.md: sha256:908ae9407c13770d5848c1d46dcdff9f7cfa9fc558288209d10e4aede5f8c723
+  .claude/skills/fcommand/SKILL.md: sha256:ef65250d6af43c78a0fee9e46e20c869a6b90a5e587501dad09510b6c70ae497
+  .claude/skills/fcommand/references/anti-patterns.md: sha256:33e34b49882945afe9eed51bca3020e63ce5878f482562dc083c643086aa20b6
+  .claude/skills/fcommand/references/examples.md: sha256:96ffaca1f594e8daddd3ef03e1b6144fdefafbe7337c238a1682ee6643030ead
+  .claude/skills/fcommand/references/preferred-patterns.md: sha256:908ae9407c13770d5848c1d46dcdff9f7cfa9fc558288209d10e4aede5f8c723
