@@ -63,7 +63,7 @@ module AssertSerializedEvent =
 
         expectedLines
         |> List.iteri (fun i expected ->
-            Expect.equal actualLines.[i] expected description
+            Expect.equal actualLines[i] expected description
         )
 
 type DoSomethingCommandMetaData = {
