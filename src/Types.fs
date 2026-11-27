@@ -232,7 +232,7 @@ module RawData =
         match data with
         | JsonValue.Record (values) ->
             try
-                match values.[index] with
+                match values[index] with
                 | k, v when k = key -> Some (Itemi v)
                 | _ -> None
             with _ -> None
